@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BINAH Analyze Request",
+  "type": "object",
+  "required": ["problem"],
+  "properties": {
+    "problem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "business_context": {
+      "type": ["string", "null"]
+    },
+    "current_process": {
+      "type": ["string", "null"]
+    },
+    "desired_outcome": {
+      "type": ["string", "null"]
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
