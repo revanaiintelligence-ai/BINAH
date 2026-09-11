@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from app.models import AnalyzeRequest, AnalyzeResponse
-from app.core import analyze, diagnose_capability
+from app.models import AnalyzeRequest, AnalyzeResponse, RealityGateRequest
+from app.core import analyze, diagnose_capability, reality_gate
 
 
 app = FastAPI(
@@ -41,3 +41,8 @@ def capability_diagnose_endpoint(
         current_capability=current_capability,
         constraints=constraints,
     )
+
+
+@app.post("/reality-gate")
+def reality_gate_endpoint(request: RealityGateRequest):
+    return reality_gate(request)
