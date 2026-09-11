@@ -48,3 +48,25 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         ai_relevance=ai_relevance,
         next_action=next_action,
     )
+
+
+def diagnose_capability(
+    need: str,
+    current_capability: str,
+    constraints: list[str] | None = None,
+) -> dict:
+    constraints = constraints or []
+
+    return {
+        "need": need.strip(),
+        "current_capability": current_capability.strip(),
+        "constraints": constraints,
+        "gap": (
+            "The capability gap requires further evidence-based analysis "
+            "before determining the appropriate solution."
+        ),
+        "next_action": (
+            "Compare the required capability with the current capability "
+            "and identify the measurable gap."
+        ),
+    }
