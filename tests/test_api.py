@@ -42,3 +42,22 @@ def test_analyze():
     assert "alternatives" in data
     assert "ai_relevance" in data
     assert "next_action" in data
+
+
+def test_capability_diagnose():
+    response = client.post(
+        "/capability/diagnose",
+        params={
+            "need": "Follow up with every qualified lead.",
+            "current_capability": "Manual WhatsApp follow-up.",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["need"] == "Follow up with every qualified lead."
+    assert data["current_capability"] == "Manual WhatsApp follow-up."
+    assert "gap" in data
+    assert "next_action" in data
