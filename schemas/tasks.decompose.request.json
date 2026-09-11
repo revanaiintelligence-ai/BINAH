@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BINAH Second-Level Task Decomposition Request",
+  "type": "object",
+  "required": [
+    "need",
+    "area",
+    "function",
+    "process",
+    "activity",
+    "task",
+    "actor"
+  ],
+  "properties": {
+    "need": {
+      "type": "string",
+      "minLength": 1
+    },
+    "area": {
+      "type": "string",
+      "minLength": 1
+    },
+    "function": {
+      "type": "string",
+      "minLength": 1
+    },
+    "process": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}
