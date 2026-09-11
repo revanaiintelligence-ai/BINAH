@@ -18,3 +18,12 @@ class AnalyzeResponse(BaseModel):
     alternatives: List[str]
     ai_relevance: str
     next_action: str
+
+
+class RealityGateRequest(BaseModel):
+    need: str = Field(..., min_length=1)
+    evidence: List[dict] = []
+    relevant_consequences: str = Field(..., min_length=1)
+    exists_currently: bool
+    desired_by_business: bool
+    capability_insufficient: bool
