@@ -1,4 +1,4 @@
-from app.models import AnalyzeRequest, AnalyzeResponse
+from app.models import AnalyzeRequest, AnalyzeResponse, RealityGateRequest
 
 
 def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
@@ -69,4 +69,41 @@ def diagnose_capability(
             "Compare the required capability with the current capability "
             "and identify the measurable gap."
         ),
+    }
+
+
+def reality_gate(request: RealityGateRequest) -> dict:
+    """Validate whether a business need passes the Reality Gate."""
+
+    failed_conditions = []
+
+    if not request.evidence:
+        failed_conditions.append("insufficient_evidence")
+
+    if not request.exists_currently:
+        failed_conditions.append("need_does_not_exist_currently")
+
+    if not request.desired_by_business:
+        failed_conditions.append("need_not_desired_by_business")
+
+    if not request.capability_insufficient:
+        failed_conditions.append("capability_not_demonstrated_as_insufficient")
+
+    if failed_conditions:
+        return {
+            "status": "STOP_NEED_NOT_VALIDATED",
+            "decision": "STOP — Need Not Validated",
+            "need": request.need.strip(),
+            "validated": False,
+            "failed_conditions": failed_conditions,
+            "relevant_consequences": request.relevant_consequences.strip(),
+        }
+
+    return {
+        "status": "NEED_VALIDATED",
+        "decision": "Need Validated — Proceed to Second Decomposition",
+        "need": request.need.strip(),
+        "validated": True,
+        "failed_conditions": [],
+        "relevant_consequences": request.relevant_consequences.strip(),
     }
