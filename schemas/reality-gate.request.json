@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BINAH Reality Gate Request",
+  "type": "object",
+  "required": ["proposed_solution", "evidence"],
+  "properties": {
+    "proposed_solution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "evidence.json"
+      }
+    }
+  }
+}
