@@ -24,9 +24,9 @@ def test_analyze():
     response = client.post(
         "/analyze",
         json={
-            "problem": "Sales leads are not being followed up consistently.",
-            "business_context": "Small real estate business.",
-            "current_process": "Leads are handled manually through WhatsApp.",
+            "problem": "Customer requests are not being followed up consistently.",
+            "business_context": "Small service business.",
+            "current_process": "Requests are handled manually through multiple channels.",
             "desired_outcome": "Improve follow-up consistency.",
             "constraints": ["Limited staff"],
         },
@@ -36,7 +36,7 @@ def test_analyze():
 
     data = response.json()
 
-    assert data["problem"] == "Sales leads are not being followed up consistently."
+    assert data["problem"] == "Customer requests are not being followed up consistently."
     assert "need" in data
     assert "gap" in data
     assert "alternatives" in data
@@ -48,8 +48,8 @@ def test_capability_diagnose():
     response = client.post(
         "/capability/diagnose",
         params={
-            "need": "Follow up with every qualified lead.",
-            "current_capability": "Manual WhatsApp follow-up.",
+            "need": "Follow up with every qualified customer request.",
+            "current_capability": "Manual follow-up across multiple channels.",
         },
     )
 
@@ -57,7 +57,7 @@ def test_capability_diagnose():
 
     data = response.json()
 
-    assert data["need"] == "Follow up with every qualified lead."
-    assert data["current_capability"] == "Manual WhatsApp follow-up."
+    assert data["need"] == "Follow up with every qualified customer request."
+    assert data["current_capability"] == "Manual follow-up across multiple channels."
     assert "gap" in data
     assert "next_action" in data
