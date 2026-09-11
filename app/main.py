@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.models import AnalyzeRequest, AnalyzeResponse
-from app.core import analyze
+from app.core import analyze, diagnose_capability
 
 
 app = FastAPI(
@@ -28,3 +28,16 @@ def health():
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze_endpoint(request: AnalyzeRequest):
     return analyze(request)
+
+
+@app.post("/capability/diagnose")
+def capability_diagnose_endpoint(
+    need: str,
+    current_capability: str,
+    constraints: list[str] | None = None,
+):
+    return diagnose_capability(
+        need=need,
+        current_capability=current_capability,
+        constraints=constraints,
+    )
