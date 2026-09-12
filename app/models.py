@@ -50,3 +50,7 @@ class TaskDecompositionRequest(BaseModel):
 class AlternativesEvaluationRequest(BaseModel):
     need: str = Field(..., min_length=1)
     alternatives: List[str] = Field(..., min_length=1)
+class AIEvaluationRequest(BaseModel):
+    need: str = Field(..., min_length=1)
+    task: str = Field(..., min_length=1)
+    alternatives: List[str] = Field(..., min_length=1)
