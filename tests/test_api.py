@@ -146,3 +146,28 @@ def test_tasks_decompose():
     assert data["actor"] == "Customer service representative"
     assert "variables" in data
     assert data["variables"]["frequency"] == "Daily"
+def test_alternatives_evaluate():
+    response = client.post(
+        "/alternatives/evaluate",
+        json={
+            "need": "Follow up with every qualified customer request.",
+            "alternatives": [
+                "Human",
+                "Process",
+                "Software",
+                "Traditional Automation",
+                "AI",
+                "Hybrid",
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["need"] == "Follow up with every qualified customer request."
+    assert len(data["alternatives"]) == 6
+    assert data["alternatives"][0]["type"] == "Human"
+    assert data["alternatives"][0]["status"] == "TO_BE_EVALUATED"
+    assert "next_action" in data
