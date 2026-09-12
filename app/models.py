@@ -27,3 +27,23 @@ class RealityGateRequest(BaseModel):
     exists_currently: bool
     desired_by_business: bool
     capability_insufficient: bool
+
+
+class TaskDecompositionRequest(BaseModel):
+    need: str = Field(..., min_length=1)
+    area: str = Field(..., min_length=1)
+    function: str = Field(..., min_length=1)
+    process: str = Field(..., min_length=1)
+    activity: str = Field(..., min_length=1)
+    task: str = Field(..., min_length=1)
+    actor: str = Field(..., min_length=1)
+    frequency: Optional[str] = None
+    time_required: Optional[str] = None
+    volume: Optional[str] = None
+    input_data: Optional[str] = None
+    decision: Optional[str] = None
+    complexity: Optional[str] = None
+    errors: Optional[str] = None
+    dependency: Optional[str] = None
+    repetition: Optional[str] = None
+    bottleneck: Optional[str] = None
