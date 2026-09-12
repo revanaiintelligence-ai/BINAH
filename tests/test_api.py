@@ -113,3 +113,36 @@ def test_reality_gate_stop():
     assert data["status"] == "STOP_NEED_NOT_VALIDATED"
     assert data["decision"] == "STOP — Need Not Validated"
     assert len(data["failed_conditions"]) > 0
+def test_tasks_decompose():
+    response = client.post(
+        "/tasks/decompose",
+        json={
+            "need": "Follow up with every qualified customer request.",
+            "area": "Customer Service",
+            "function": "Customer Follow-up",
+            "process": "Lead Follow-up",
+            "activity": "Contact qualified requests",
+            "task": "Send follow-up message",
+            "actor": "Customer service representative",
+            "frequency": "Daily",
+            "time_required": "5 minutes",
+            "volume": "20 requests",
+            "input_data": "Customer request details",
+            "decision": "Whether follow-up is required",
+            "complexity": "Low",
+            "errors": "Missed follow-ups",
+            "dependency": "Customer contact information",
+            "repetition": "High",
+            "bottleneck": "Manual tracking",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["need"] == "Follow up with every qualified customer request."
+    assert data["task"] == "Send follow-up message"
+    assert data["actor"] == "Customer service representative"
+    assert "variables" in data
+    assert data["variables"]["frequency"] == "Daily"
