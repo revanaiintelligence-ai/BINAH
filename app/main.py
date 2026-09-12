@@ -5,9 +5,11 @@ from app.models import (
     AnalyzeResponse,
     RealityGateRequest,
     TaskDecompositionRequest,
+    AlternativesEvaluationRequest,
 )
 from app.core import analyze, diagnose_capability, reality_gate
 from app.tasks import decompose_task
+from app.alternatives import evaluate_alternatives
 
 
 app = FastAPI(
@@ -74,4 +76,14 @@ def tasks_decompose_endpoint(request: TaskDecompositionRequest):
         dependency=request.dependency,
         repetition=request.repetition,
         bottleneck=request.bottleneck,
+    )
+
+
+@app.post("/alternatives/evaluate")
+def alternatives_evaluate_endpoint(
+    request: AlternativesEvaluationRequest,
+):
+    return evaluate_alternatives(
+        need=request.need,
+        alternatives=request.alternatives,
     )
