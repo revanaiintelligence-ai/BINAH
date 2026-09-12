@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 
-from app.models import AnalyzeRequest, AnalyzeResponse, RealityGateRequest
+from app.models import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    RealityGateRequest,
+    TaskDecompositionRequest,
+)
 from app.core import analyze, diagnose_capability, reality_gate
+from app.tasks import decompose_task
 
 
 app = FastAPI(
@@ -46,3 +52,26 @@ def capability_diagnose_endpoint(
 @app.post("/reality-gate")
 def reality_gate_endpoint(request: RealityGateRequest):
     return reality_gate(request)
+
+
+@app.post("/tasks/decompose")
+def tasks_decompose_endpoint(request: TaskDecompositionRequest):
+    return decompose_task(
+        need=request.need,
+        area=request.area,
+        function=request.function,
+        process=request.process,
+        activity=request.activity,
+        task=request.task,
+        actor=request.actor,
+        frequency=request.frequency,
+        time_required=request.time_required,
+        volume=request.volume,
+        input_data=request.input_data,
+        decision=request.decision,
+        complexity=request.complexity,
+        errors=request.errors,
+        dependency=request.dependency,
+        repetition=request.repetition,
+        bottleneck=request.bottleneck,
+    )
