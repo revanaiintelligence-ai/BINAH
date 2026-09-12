@@ -47,3 +47,6 @@ class TaskDecompositionRequest(BaseModel):
     dependency: Optional[str] = None
     repetition: Optional[str] = None
     bottleneck: Optional[str] = None
+class AlternativesEvaluationRequest(BaseModel):
+    need: str = Field(..., min_length=1)
+    alternatives: List[str] = Field(..., min_length=1)
