@@ -1,22 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "BINAH Capability Diagnose Request",
+  "$id": "https://binah-api/schema/capability.diagnose.request.json",
+  "title": "BINAH Capability Diagnosis Request",
+  "description": "Request contract for diagnosing current capability, required capability, and the resulting gap.",
   "type": "object",
-  "required": ["need", "current_capability"],
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
   "properties": {
     "need": {
-      "type": "string",
-      "minLength": 1
+      "description": "Business need being analyzed."
     },
-    "current_capability": {
-      "type": "string",
-      "minLength": 1
-    },
-    "constraints": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "business_map": {
+      "description": "Business operational map providing structural context for the capability diagnosis."
     }
   }
 }
