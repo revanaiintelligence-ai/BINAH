@@ -1,3 +1,17 @@
+"""
+BINAH — API Layer
+
+HTTP/API layer for BINAH v0.2.
+
+This module is responsible only for:
+- API application configuration
+- HTTP routes
+- request validation through Pydantic models
+- delegation to BINAH analytical modules
+
+Business methodology and analytical logic remain outside this layer.
+"""
+
 from fastapi import FastAPI
 
 from app.models import (
@@ -8,95 +22,255 @@ from app.models import (
     AlternativesEvaluationRequest,
     AIEvaluationRequest,
 )
-from app.core import analyze, diagnose_capability, reality_gate
-from app.tasks import decompose_task
+
+from app.orchestrator import run_binah_analysis
+from app.business import decompose_business
+from app.needs import identify_need
+from app.capability import diagnose_capability
+from app.reality import evaluate_reality_gate
+from app.tasks import decompose_need_tasks
 from app.alternatives import evaluate_alternatives
+from app.solutions import evaluate_solutions
 from app.ai import evaluate_ai
+from app.work import design_work
+from app.agents import specify_agent
+from app.opportunities import identify_opportunities
+from app.diagnostic import generate_diagnostic
+
+
+BINAH_VERSION = "0.2"
 
 
 app = FastAPI(
     title="BINAH API",
-    description="Business Intelligence & Need Analysis Hunters API",
-    version="0.1.0",
+    description=(
+        "BINAH — Business Intelligence & Need Analysis Hunters. "
+        "Business, process, task, need, capability, solution, "
+        "AI, work, opportunity, and diagnostic analysis."
+    ),
+    version=BINAH_VERSION,
 )
 
 
 @app.get("/")
 def root():
+    """Return basic API information."""
     return {
         "name": "BINAH API",
-        "version": "0.1.0",
+        "methodology": "BINAH",
+        "version": BINAH_VERSION,
         "status": "operational",
     }
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """Return API health status."""
+    return {
+        "status": "ok",
+        "version": BINAH_VERSION,
+    }
 
 
-@app.post("/analyze", response_model=AnalyzeResponse)
+@app.post(
+    "/v1/binah/analyze",
+    response_model=AnalyzeResponse,
+)
 def analyze_endpoint(request: AnalyzeRequest):
-    return analyze(request)
+    """
+    Execute the complete BINAH analytical workflow.
+
+    This is the primary endpoint.
+    """
+    return run_binah_analysis(
+        business=request.business,
+        context=request.context,
+        objective=request.objective,
+        evidence=request.evidence,
+    )
 
 
-@app.post("/capability/diagnose")
-def capability_diagnose_endpoint(
-    need: str,
-    current_capability: str,
-    constraints: list[str] | None = None,
+@app.post("/v1/business/decompose")
+def business_decompose_endpoint(
+    request: AnalyzeRequest,
 ):
+    """Perform the initial business decomposition."""
+    return decompose_business(
+        business=request.business,
+        context=request.context,
+    )
+
+
+@app.post("/v1/needs/identify")
+def needs_identify_endpoint(
+    request: AnalyzeRequest,
+):
+    """Identify the real business need."""
+    return identify_need(
+        business=request.business,
+        context=request.context,
+        objective=request.objective,
+        evidence=request.evidence,
+    )
+
+
+@app.post("/v1/capability/diagnose")
+def capability_diagnose_endpoint(
+    request: dict,
+):
+    """Diagnose current capability against required capability."""
     return diagnose_capability(
-        need=need,
-        current_capability=current_capability,
-        constraints=constraints,
+        need=request.get("need"),
+        business_map=request.get("business_map"),
     )
 
 
-@app.post("/reality-gate")
-def reality_gate_endpoint(request: RealityGateRequest):
-    return reality_gate(request)
-
-
-@app.post("/tasks/decompose")
-def tasks_decompose_endpoint(request: TaskDecompositionRequest):
-    return decompose_task(
+@app.post("/v1/gates/reality")
+def reality_gate_endpoint(
+    request: RealityGateRequest,
+):
+    """Evaluate whether the need passes the Reality Gate."""
+    return evaluate_reality_gate(
         need=request.need,
-        area=request.area,
-        function=request.function,
-        process=request.process,
-        activity=request.activity,
-        task=request.task,
-        actor=request.actor,
-        frequency=request.frequency,
-        time_required=request.time_required,
-        volume=request.volume,
-        input_data=request.input_data,
-        decision=request.decision,
-        complexity=request.complexity,
-        errors=request.errors,
-        dependency=request.dependency,
-        repetition=request.repetition,
-        bottleneck=request.bottleneck,
+        evidence=request.evidence,
+        consequences=request.consequences,
+        exists=request.exists,
+        wants_to_solve=request.wants_to_solve,
+        capability_insufficient=request.capability_insufficient,
     )
 
 
-@app.post("/alternatives/evaluate")
+@app.post("/v1/tasks/decompose")
+def tasks_decompose_endpoint(
+    request: TaskDecompositionRequest,
+):
+    """Perform the second-level task decomposition."""
+    return decompose_need_tasks(
+        need=request.need,
+        business_map=request.business_map,
+        reality_gate=request.reality_gate,
+    )
+
+
+@app.post("/v1/alternatives/evaluate")
 def alternatives_evaluate_endpoint(
     request: AlternativesEvaluationRequest,
 ):
+    """Evaluate human, process, software, automation, AI, and hybrid alternatives."""
     return evaluate_alternatives(
         need=request.need,
-        alternatives=request.alternatives,
+        second_decomposition=request.second_decomposition,
     )
 
 
-@app.post("/ai/evaluate")
+@app.post("/v1/solutions/evaluate")
+def solutions_evaluate_endpoint(
+    request: dict,
+):
+    """Evaluate and compare candidate solutions."""
+    return evaluate_solutions(
+        need=request.get("need"),
+        alternatives=request.get("alternatives"),
+    )
+
+
+@app.post("/v1/ai/evaluate")
 def ai_evaluate_endpoint(
     request: AIEvaluationRequest,
 ):
+    """Evaluate whether and how AI should participate."""
     return evaluate_ai(
         need=request.need,
         task=request.task,
         alternatives=request.alternatives,
+        solution_evaluation=request.solution_evaluation,
+    )
+
+
+@app.post("/v1/work/design")
+def work_design_endpoint(
+    request: dict,
+):
+    """Design the required work structure."""
+    return design_work(
+        need=request.get("need"),
+        second_decomposition=request.get(
+            "second_decomposition"
+        ),
+        ai_evaluation=request.get(
+            "ai_evaluation"
+        ),
+    )
+
+
+@app.post("/v1/agents/specify")
+def agents_specify_endpoint(
+    request: dict,
+):
+    """Specify a specialized agent only when justified."""
+    return specify_agent(
+        need=request.get("need"),
+        ai_evaluation=request.get(
+            "ai_evaluation"
+        ),
+        work_design=request.get(
+            "work_design"
+        ),
+        solution_evaluation=request.get(
+            "solution_evaluation"
+        ),
+    )
+
+
+@app.post("/v1/opportunities/identify")
+def opportunities_identify_endpoint(
+    request: dict,
+):
+    """Identify and prioritize business opportunities."""
+    return identify_opportunities(
+        need=request.get("need"),
+        solution_evaluation=request.get(
+            "solution_evaluation"
+        ),
+        ai_evaluation=request.get(
+            "ai_evaluation"
+        ),
+        work_design=request.get(
+            "work_design"
+        ),
+        agent_specification=request.get(
+            "agent_specification"
+        ),
+    )
+
+
+@app.post("/v1/diagnostic/generate")
+def diagnostic_generate_endpoint(
+    request: dict,
+):
+    """Generate the final BINAH diagnostic."""
+    return generate_diagnostic(
+        business=request.get("business"),
+        context=request.get("context"),
+        objective=request.get("objective"),
+        need=request.get("need"),
+        capability=request.get("capability"),
+        gap=request.get("gap"),
+        reality_gate=request.get("reality_gate"),
+        alternatives=request.get("alternatives"),
+        solution_evaluation=request.get(
+            "solution_evaluation"
+        ),
+        ai_evaluation=request.get(
+            "ai_evaluation"
+        ),
+        work_design=request.get(
+            "work_design"
+        ),
+        agent_specification=request.get(
+            "agent_specification"
+        ),
+        opportunities=request.get(
+            "opportunities"
+        ),
     )
