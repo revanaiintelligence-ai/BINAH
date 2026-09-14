@@ -17,10 +17,16 @@ from fastapi import FastAPI
 from app.models import (
     AnalyzeRequest,
     AnalyzeResponse,
+    CapabilityDiagnosisRequest,
     RealityGateRequest,
     TaskDecompositionRequest,
     AlternativesEvaluationRequest,
+    SolutionEvaluationRequest,
     AIEvaluationRequest,
+    WorkDesignRequest,
+    AgentSpecificationRequest,
+    OpportunityIdentificationRequest,
+    DiagnosticGenerationRequest,
 )
 
 from app.orchestrator import run_binah_analysis
@@ -116,12 +122,12 @@ def needs_identify_endpoint(
 
 @app.post("/v1/capability/diagnose")
 def capability_diagnose_endpoint(
-    request: dict,
+    request: CapabilityDiagnosisRequest,
 ):
     """Diagnose current capability against required capability."""
     return diagnose_capability(
-        need=request.get("need"),
-        business_map=request.get("business_map"),
+        need=request.need,
+        business_map=request.business_map,
     )
 
 
@@ -156,7 +162,10 @@ def tasks_decompose_endpoint(
 def alternatives_evaluate_endpoint(
     request: AlternativesEvaluationRequest,
 ):
-    """Evaluate human, process, software, automation, AI, and hybrid alternatives."""
+    """
+    Evaluate human, process, software, traditional automation,
+    AI, and hybrid alternatives.
+    """
     return evaluate_alternatives(
         need=request.need,
         second_decomposition=request.second_decomposition,
@@ -165,12 +174,12 @@ def alternatives_evaluate_endpoint(
 
 @app.post("/v1/solutions/evaluate")
 def solutions_evaluate_endpoint(
-    request: dict,
+    request: SolutionEvaluationRequest,
 ):
     """Evaluate and compare candidate solutions."""
     return evaluate_solutions(
-        need=request.get("need"),
-        alternatives=request.get("alternatives"),
+        need=request.need,
+        alternatives=request.alternatives,
     )
 
 
@@ -189,88 +198,60 @@ def ai_evaluate_endpoint(
 
 @app.post("/v1/work/design")
 def work_design_endpoint(
-    request: dict,
+    request: WorkDesignRequest,
 ):
     """Design the required work structure."""
     return design_work(
-        need=request.get("need"),
-        second_decomposition=request.get(
-            "second_decomposition"
-        ),
-        ai_evaluation=request.get(
-            "ai_evaluation"
-        ),
+        need=request.need,
+        second_decomposition=request.second_decomposition,
+        ai_evaluation=request.ai_evaluation,
     )
 
 
 @app.post("/v1/agents/specify")
 def agents_specify_endpoint(
-    request: dict,
+    request: AgentSpecificationRequest,
 ):
     """Specify a specialized agent only when justified."""
     return specify_agent(
-        need=request.get("need"),
-        ai_evaluation=request.get(
-            "ai_evaluation"
-        ),
-        work_design=request.get(
-            "work_design"
-        ),
-        solution_evaluation=request.get(
-            "solution_evaluation"
-        ),
+        need=request.need,
+        ai_evaluation=request.ai_evaluation,
+        work_design=request.work_design,
+        solution_evaluation=request.solution_evaluation,
     )
 
 
 @app.post("/v1/opportunities/identify")
 def opportunities_identify_endpoint(
-    request: dict,
+    request: OpportunityIdentificationRequest,
 ):
     """Identify and prioritize business opportunities."""
     return identify_opportunities(
-        need=request.get("need"),
-        solution_evaluation=request.get(
-            "solution_evaluation"
-        ),
-        ai_evaluation=request.get(
-            "ai_evaluation"
-        ),
-        work_design=request.get(
-            "work_design"
-        ),
-        agent_specification=request.get(
-            "agent_specification"
-        ),
+        need=request.need,
+        solution_evaluation=request.solution_evaluation,
+        ai_evaluation=request.ai_evaluation,
+        work_design=request.work_design,
+        agent_specification=request.agent_specification,
     )
 
 
 @app.post("/v1/diagnostic/generate")
 def diagnostic_generate_endpoint(
-    request: dict,
+    request: DiagnosticGenerationRequest,
 ):
     """Generate the final BINAH diagnostic."""
     return generate_diagnostic(
-        business=request.get("business"),
-        context=request.get("context"),
-        objective=request.get("objective"),
-        need=request.get("need"),
-        capability=request.get("capability"),
-        gap=request.get("gap"),
-        reality_gate=request.get("reality_gate"),
-        alternatives=request.get("alternatives"),
-        solution_evaluation=request.get(
-            "solution_evaluation"
-        ),
-        ai_evaluation=request.get(
-            "ai_evaluation"
-        ),
-        work_design=request.get(
-            "work_design"
-        ),
-        agent_specification=request.get(
-            "agent_specification"
-        ),
-        opportunities=request.get(
-            "opportunities"
-        ),
+        business=request.business,
+        context=request.context,
+        objective=request.objective,
+        need=request.need,
+        capability=request.capability,
+        gap=request.gap,
+        reality_gate=request.reality_gate,
+        alternatives=request.alternatives,
+        solution_evaluation=request.solution_evaluation,
+        ai_evaluation=request.ai_evaluation,
+        work_design=request.work_design,
+        agent_specification=request.agent_specification,
+        opportunities=request.opportunities,
     )
