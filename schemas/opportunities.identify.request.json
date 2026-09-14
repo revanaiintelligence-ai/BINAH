@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/opportunities.identify.request.json",
+  "title": "BINAH Opportunity Identification Request",
+  "description": "Request contract for identifying and prioritizing business, process, task, capability, technology, AI, and hybrid opportunities.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
+  "properties": {
+    "need": {
+      "description": "Validated business need from which opportunities are derived."
+    },
+    "solution_evaluation": {
+      "description": "Comparative solution evaluation."
+    },
+    "ai_evaluation": {
+      "description": "AI evaluation including current opportunities, future opportunities, and readiness gaps."
+    },
+    "work_design": {
+      "description": "Work design and improvement opportunities."
+    },
+    "agent_specification": {
+      "description": "Specialized agent specification when an agent is justified."
+    }
+  }
+}
