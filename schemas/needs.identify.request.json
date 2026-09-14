@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/needs.identify.request.json",
+  "title": "BINAH Need Identification Request",
+  "description": "Request contract for identifying the real business need.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "business",
+    "objective"
+  ],
+  "properties": {
+    "business": {
+      "description": "Business or organizational context being analyzed."
+    },
+    "context": {
+      "description": "Relevant business context."
+    },
+    "objective": {
+      "description": "Desired business result or objective."
+    },
+    "evidence": {
+      "description": "Available evidence supporting need identification."
+    }
+  }
+}
