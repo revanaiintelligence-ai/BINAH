@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+
 from app.agents import specify_agent
 from app.ai import evaluate_ai
 from app.alternatives import evaluate_alternatives
@@ -16,6 +17,7 @@ from app.work import design_work
 
 
 BINAH_VERSION = "0.2"
+
 
 ANALYSIS_STAGES = [
     "business_map",
@@ -43,13 +45,12 @@ def run_binah_analysis(
     """
     Execute the complete BINAH analytical workflow.
 
-    BINAH follows the principle:
+    BINAH principle:
 
         Need before AI.
 
-    The orchestrator coordinates the analytical modules but does not
-    implement their methodology. Each module remains responsible for
-    its own domain logic.
+    The orchestrator coordinates the analytical modules.
+    It does not implement their methodology.
 
     Flow:
 
@@ -61,7 +62,8 @@ def run_binah_analysis(
         → Alternatives
         → Solutions
         → AI
-        → Work / Agent
+        → Work
+        → Agent
         → Opportunities
         → Diagnostic
     """
@@ -170,6 +172,10 @@ def run_binah_analysis(
         data=reality_gate,
     )
 
+    # ---------------------------------------------------------
+    # STOP CONDITION
+    # ---------------------------------------------------------
+
     if not _reality_gate_validated(reality_gate):
         result["status"] = "STOP_NEED_NOT_VALIDATED"
 
@@ -190,10 +196,12 @@ def run_binah_analysis(
         )
 
         result["diagnostic"] = diagnostic
-        result["status"] = diagnostic.get(
-            "status",
-            "STOP_NEED_NOT_VALIDATED",
-        )
+
+        if isinstance(diagnostic, dict):
+            result["status"] = diagnostic.get(
+                "status",
+                "STOP_NEED_NOT_VALIDATED",
+            )
 
         add_trace_stage(
             trace,
@@ -359,10 +367,13 @@ def run_binah_analysis(
         data=diagnostic,
     )
 
-    result["status"] = diagnostic.get(
-        "status",
-        "ANALYSIS_COMPLETE",
-    )
+    if isinstance(diagnostic, dict):
+        result["status"] = diagnostic.get(
+            "status",
+            "ANALYSIS_COMPLETE",
+        )
+    else:
+        result["status"] = "ANALYSIS_COMPLETE"
 
     return result
 
@@ -374,40 +385,100 @@ def _run_reality_gate(
     capability: Any,
 ) -> Dict[str, Any]:
     """
-    Translate upstream analysis into the explicit Reality Gate
-    criteria required by the reality module.
+    Prepare the exact inputs required by the Reality Gate.
+
+    The needs module returns the structured need inside the
+    'need' property. The Reality Gate operates on that actual
+    need definition rather than on the complete wrapper.
     """
 
-    exists = _extract_boolean(
-        need,
-        "exists",
-        default=True,
+    normalized_need = _extract_defined_need(need)
+
+    normalized_evidence = _normalize_evidence(evidence)
+
+    relevant_consequences = _extract_value(
+        normalized_need,
+        "consequences",
+        default=None,
     )
 
-    wants_to_solve = _extract_boolean(
-        need,
-        "wants_to_solve",
-        default=True,
+    exists_currently = _extract_boolean(
+        normalized_need,
+        "exists_currently",
+        default=_extract_boolean(
+            normalized_need,
+            "exists",
+            default=False,
+        ),
+    )
+
+    desired_by_business = _extract_boolean(
+        normalized_need,
+        "desired_by_business",
+        default=_extract_boolean(
+            normalized_need,
+            "wants_to_solve",
+            default=False,
+        ),
     )
 
     capability_insufficient = _extract_capability_insufficient(
         capability
     )
 
-    consequences = _extract_value(
-        need,
-        "consequences",
-        default=None,
-    )
-
     return evaluate_reality_gate(
-        need=need,
-        evidence=evidence,
-        consequences=consequences,
-        exists=exists,
-        wants_to_solve=wants_to_solve,
+        need=normalized_need,
+        evidence=normalized_evidence,
+        relevant_consequences=relevant_consequences,
+        exists_currently=exists_currently,
+        desired_by_business=desired_by_business,
         capability_insufficient=capability_insufficient,
     )
+
+
+def _extract_defined_need(
+    need: Any,
+) -> Dict[str, Any]:
+    """
+    Extract the actual need definition from the needs module output.
+
+    If the module already returns a direct need structure, preserve it.
+    """
+
+    if not isinstance(need, dict):
+        return {}
+
+    nested_need = need.get("need")
+
+    if isinstance(nested_need, dict):
+        return dict(nested_need)
+
+    return dict(need)
+
+
+def _normalize_evidence(
+    evidence: Any,
+) -> list:
+    """
+    Normalize evidence for the Reality Gate without assigning
+    evidentiary validity.
+    """
+
+    if evidence is None:
+        return []
+
+    if isinstance(evidence, dict):
+        items = evidence.get("items")
+
+        if isinstance(items, list):
+            return items
+
+        return [evidence]
+
+    if isinstance(evidence, list):
+        return evidence
+
+    return [evidence]
 
 
 def _reality_gate_validated(
@@ -420,15 +491,10 @@ def _reality_gate_validated(
     if not isinstance(reality_gate, dict):
         return False
 
-    status = reality_gate.get("status")
-
-    if status == "VALIDATED":
+    if reality_gate.get("status") == "VALIDATED":
         return True
 
     if reality_gate.get("validated") is True:
-        return True
-
-    if reality_gate.get("passes") is True:
         return True
 
     return False
@@ -438,8 +504,8 @@ def _extract_capability_insufficient(
     capability: Any,
 ) -> bool:
     """
-    Extract whether current capability is insufficient relative
-    to required capability.
+    Determine whether the capability diagnosis establishes
+    an insufficient current capability.
     """
 
     if not isinstance(capability, dict):
@@ -453,10 +519,24 @@ def _extract_capability_insufficient(
 
     status = capability.get("status")
 
-    return status in {
+    if status in {
         "INSUFFICIENT",
         "PARTIALLY_SUFFICIENT",
-    }
+    }:
+        return True
+
+    gap = capability.get("gap")
+
+    if isinstance(gap, dict):
+        gap_status = gap.get("status")
+
+        if gap_status in {
+            "INSUFFICIENT",
+            "PARTIALLY_SUFFICIENT",
+        }:
+            return True
+
+    return False
 
 
 def _extract_boolean(
@@ -466,7 +546,7 @@ def _extract_boolean(
     default: bool,
 ) -> bool:
     """
-    Safely extract a boolean value from a module result.
+    Safely extract a boolean from a module result.
     """
 
     if isinstance(source, dict):
