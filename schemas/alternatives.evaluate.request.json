@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/alternatives.evaluate.request.json",
+  "title": "BINAH Alternatives Evaluation Request",
+  "description": "Request contract for evaluating human, process, software, traditional automation, AI, and hybrid alternatives for a validated business need.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
+  "properties": {
+    "need": {
+      "description": "Validated business need being evaluated."
+    },
+    "second_decomposition": {
+      "description": "Second-level decomposition of the affected process, activity, or task."
+    },
+    "alternatives": {
+      "type": "array",
+      "description": "Optional alternative definitions supplied for evaluation.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "HUMAN",
+              "PROCESS",
+              "SOFTWARE",
+              "TRADITIONAL_AUTOMATION",
+              "AI",
+              "HYBRID"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
