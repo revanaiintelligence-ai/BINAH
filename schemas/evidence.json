@@ -1,23 +1,80 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/evidence.json",
   "title": "BINAH Evidence",
+  "description": "Evidence contract used to support BINAH analysis, findings, reasoning, and recommendations.",
   "type": "object",
-  "required": ["source", "observation"],
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ],
   "properties": {
-    "source": {
-      "type": "string",
-      "minLength": 1
-    },
-    "observation": {
-      "type": "string",
-      "minLength": 1
-    },
-    "date": {
-      "type": ["string", "null"]
-    },
-    "reliability": {
-      "type": ["string", "null"],
-      "enum": ["high", "medium", "low", null]
+    "items": {
+      "type": "array",
+      "description": "Collection of evidence items supporting the analysis.",
+      "items": {
+        "$ref": "#/$defs/evidence_item"
+      }
+    }
+  },
+  "$defs": {
+    "evidence_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "content"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the evidence item."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "DATA",
+            "DOCUMENT",
+            "OBSERVATION",
+            "STATEMENT",
+            "RECORD",
+            "METRIC",
+            "OTHER"
+          ],
+          "description": "Type of evidence supplied."
+        },
+        "content": {
+          "description": "The actual evidence content."
+        },
+        "source": {
+          "description": "Origin or source of the evidence."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date associated with the evidence, when available."
+        },
+        "reliability": {
+          "type": "string",
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "UNKNOWN"
+          ],
+          "description": "Assessment of evidence reliability."
+        },
+        "relevance": {
+          "type": "string",
+          "enum": [
+            "DIRECT",
+            "INDIRECT",
+            "CONTEXTUAL",
+            "UNKNOWN"
+          ],
+          "description": "Relationship of the evidence to the analyzed need."
+        }
+      }
     }
   }
 }
