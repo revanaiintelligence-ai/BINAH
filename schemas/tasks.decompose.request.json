@@ -1,45 +1,92 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "BINAH Second-Level Task Decomposition Request",
+  "$id": "https://binah-api/schema/tasks.decompose.request.json",
+  "title": "BINAH Task Decomposition Request",
+  "description": "Request contract for the second-level decomposition of a validated business need into process, activity, and task characteristics.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
-    "need",
-    "area",
-    "function",
-    "process",
-    "activity",
-    "task",
-    "actor"
+    "need"
   ],
   "properties": {
     "need": {
-      "type": "string",
-      "minLength": 1
+      "description": "Validated business need being decomposed."
+    },
+    "business_map": {
+      "description": "Business operational map providing structural context for the decomposition."
+    },
+    "reality_gate": {
+      "description": "Reality Gate result authorizing the second-level decomposition."
     },
     "area": {
       "type": "string",
-      "minLength": 1
+      "description": "Business area affected by the need."
     },
     "function": {
       "type": "string",
-      "minLength": 1
+      "description": "Business function affected by the need."
     },
     "process": {
       "type": "string",
-      "minLength": 1
+      "description": "Process affected by the need."
     },
     "activity": {
       "type": "string",
-      "minLength": 1
+      "description": "Activity affected by the need."
     },
     "task": {
       "type": "string",
-      "minLength": 1
+      "description": "Specific task being analyzed."
     },
     "actor": {
       "type": "string",
-      "minLength": 1
+      "description": "Actor responsible for performing the task."
+    },
+    "frequency": {
+      "type": "string",
+      "description": "Frequency with which the task is performed."
+    },
+    "time": {
+      "description": "Time required to perform the task."
+    },
+    "volume": {
+      "description": "Volume of work handled by the task."
+    },
+    "input": {
+      "description": "Inputs required to perform the task."
+    },
+    "information": {
+      "description": "Information required to perform or support the task."
+    },
+    "documents": {
+      "description": "Documents involved in the task."
+    },
+    "decision": {
+      "description": "Decision involved in or produced by the task."
+    },
+    "complexity": {
+      "description": "Complexity characteristics of the task."
+    },
+    "errors": {
+      "description": "Errors or error patterns associated with the task."
+    },
+    "dependency": {
+      "description": "Dependencies affecting the task."
+    },
+    "human_role": {
+      "description": "Human role currently involved in the task."
+    },
+    "repetition": {
+      "description": "Repetition characteristics of the task."
+    },
+    "bottleneck": {
+      "description": "Bottleneck or constraint associated with the task."
+    },
+    "efficiency": {
+      "description": "Current efficiency characteristics of the task."
+    },
+    "improvement": {
+      "description": "Known or observed improvement opportunity."
     }
-  },
-  "additionalProperties": false
+  }
 }
