@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/solutions.evaluate.request.json",
+  "title": "BINAH Solution Evaluation Request",
+  "description": "Request contract for comparatively evaluating candidate solutions for a validated business need.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
+  "properties": {
+    "need": {
+      "description": "Validated business need being evaluated."
+    },
+    "alternatives": {
+      "description": "Alternative solutions available for comparative evaluation."
+    }
+  }
+}
