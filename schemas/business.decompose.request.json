@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/business.decompose.request.json",
+  "title": "BINAH Business Decomposition Request",
+  "description": "Request contract for the initial decomposition of a business or organization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "business"
+  ],
+  "properties": {
+    "business": {
+      "description": "Business or organization to be decomposed."
+    },
+    "context": {
+      "description": "Relevant context required to understand the business."
+    }
+  }
+}
