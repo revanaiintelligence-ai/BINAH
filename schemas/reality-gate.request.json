@@ -1,39 +1,37 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/reality-gate.request.json",
   "title": "BINAH Reality Gate Request",
+  "description": "Request contract for validating whether a business need passes the BINAH Reality Gate.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
-    "need",
-    "evidence",
-    "relevant_consequences",
-    "exists_currently",
-    "desired_by_business",
-    "capability_insufficient"
+    "need"
   ],
   "properties": {
     "need": {
-      "type": "string",
-      "minLength": 1
+      "description": "Business need being evaluated."
     },
     "evidence": {
-      "type": "array",
-      "items": {
-        "$ref": "evidence.json"
-      }
+      "description": "Evidence supporting the existence and relevance of the need."
     },
-    "relevant_consequences": {
-      "type": "string",
-      "minLength": 1
+    "consequences": {
+      "description": "Relevant consequences produced by the current situation."
     },
-    "exists_currently": {
-      "type": "boolean"
+    "exists": {
+      "type": "boolean",
+      "description": "Whether the need or underlying situation currently exists.",
+      "default": false
     },
-    "desired_by_business": {
-      "type": "boolean"
+    "wants_to_solve": {
+      "type": "boolean",
+      "description": "Whether the business explicitly wants to solve the need.",
+      "default": false
     },
     "capability_insufficient": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether current capability is insufficient relative to the required capability.",
+      "default": false
     }
-  },
-  "additionalProperties": false
+  }
 }
