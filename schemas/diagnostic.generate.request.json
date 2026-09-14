@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/diagnostic.generate.request.json",
+  "title": "BINAH Diagnostic Generation Request",
+  "description": "Request contract for generating the final BINAH diagnostic from the complete analytical workflow.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "business",
+    "context",
+    "objective",
+    "need"
+  ],
+  "properties": {
+    "business": {
+      "description": "Business or organizational context analyzed."
+    },
+    "context": {
+      "description": "Relevant business context."
+    },
+    "objective": {
+      "description": "Desired business result or objective."
+    },
+    "need": {
+      "description": "Validated business need."
+    },
+    "capability": {
+      "description": "Capability diagnosis."
+    },
+    "gap": {
+      "description": "Capability gap derived from required and current capability."
+    },
+    "reality_gate": {
+      "description": "Reality Gate result."
+    },
+    "alternatives": {
+      "description": "Alternative evaluation."
+    },
+    "solution_evaluation": {
+      "description": "Comparative solution evaluation."
+    },
+    "ai_evaluation": {
+      "description": "AI evaluation."
+    },
+    "work_design": {
+      "description": "Work design."
+    },
+    "agent_specification": {
+      "description": "Specialized agent specification, when justified."
+    },
+    "opportunities": {
+      "description": "Identified and prioritized opportunities."
+    }
+  }
+}
