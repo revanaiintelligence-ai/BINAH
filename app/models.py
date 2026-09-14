@@ -1,60 +1,209 @@
+"""
+BINAH — Shared API Models
+
+Definitive request and response contracts for BINAH v0.2.
+
+This module contains data contracts only.
+Business methodology and analytical logic belong to the app modules.
+"""
+
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import List, Optional
 
 
 class AnalyzeRequest(BaseModel):
-    problem: str = Field(..., min_length=1)
-    business_context: Optional[str] = None
-    current_process: Optional[str] = None
-    desired_outcome: Optional[str] = None
-    constraints: List[str] = []
+    """Request for the complete BINAH analysis."""
+
+    business: Any = Field(
+        ...,
+        description="Business or organizational context being analyzed.",
+    )
+
+    context: Any = Field(
+        ...,
+        description="Relevant business context.",
+    )
+
+    objective: Any = Field(
+        ...,
+        description="Desired business result or objective.",
+    )
+
+    evidence: Optional[Any] = Field(
+        default=None,
+        description="Available evidence supporting the analysis.",
+    )
 
 
 class AnalyzeResponse(BaseModel):
-    problem: str
-    diagnosis: str
-    need: str
-    gap: str
-    alternatives: List[str]
-    ai_relevance: str
-    next_action: str
+    """Response from the complete BINAH analysis."""
+
+    methodology: str = "BINAH"
+    version: str = "0.2"
+    status: str
+
+    business: Any = None
+    context: Any = None
+    objective: Any = None
+
+    trace: Optional[Dict[str, Any]] = None
+
+    business_map: Optional[Dict[str, Any]] = None
+    need: Optional[Dict[str, Any]] = None
+    capability: Optional[Dict[str, Any]] = None
+    gap: Any = None
+    reality_gate: Optional[Dict[str, Any]] = None
+
+    second_decomposition: Optional[Dict[str, Any]] = None
+    alternatives: Optional[Dict[str, Any]] = None
+    solution_evaluation: Optional[Dict[str, Any]] = None
+    ai_evaluation: Optional[Dict[str, Any]] = None
+    work_design: Optional[Dict[str, Any]] = None
+    agent_specification: Optional[Dict[str, Any]] = None
+    opportunities: Optional[Dict[str, Any]] = None
+    diagnostic: Optional[Dict[str, Any]] = None
+
+    result: Any = None
 
 
 class RealityGateRequest(BaseModel):
-    need: str = Field(..., min_length=1)
-    evidence: List[dict] = []
-    relevant_consequences: str = Field(..., min_length=1)
-    exists_currently: bool
-    desired_by_business: bool
-    capability_insufficient: bool
+    """Request for Reality Gate evaluation."""
+
+    need: Any
+
+    evidence: Any = None
+
+    consequences: Any = None
+
+    exists: bool = False
+
+    wants_to_solve: bool = False
+
+    capability_insufficient: bool = False
 
 
 class TaskDecompositionRequest(BaseModel):
-    need: str = Field(..., min_length=1)
-    area: str = Field(..., min_length=1)
-    function: str = Field(..., min_length=1)
-    process: str = Field(..., min_length=1)
-    activity: str = Field(..., min_length=1)
-    task: str = Field(..., min_length=1)
-    actor: str = Field(..., min_length=1)
+    """Request for second-level task decomposition."""
+
+    need: Any
+
+    business_map: Optional[Dict[str, Any]] = None
+
+    reality_gate: Optional[Dict[str, Any]] = None
+
+    area: Optional[str] = None
+    function: Optional[str] = None
+    process: Optional[str] = None
+    activity: Optional[str] = None
+    task: Optional[str] = None
+
+    actor: Optional[str] = None
     frequency: Optional[str] = None
-    time_required: Optional[str] = None
-    volume: Optional[str] = None
-    input_data: Optional[str] = None
-    decision: Optional[str] = None
-    complexity: Optional[str] = None
-    errors: Optional[str] = None
-    dependency: Optional[str] = None
-    repetition: Optional[str] = None
-    bottleneck: Optional[str] = None
+    time_required: Optional[Any] = None
+    volume: Optional[Any] = None
+    input_data: Optional[Any] = None
+    information: Optional[Any] = None
+    documents: Optional[Any] = None
+    decision: Optional[Any] = None
+    complexity: Optional[Any] = None
+    errors: Optional[Any] = None
+    dependency: Optional[Any] = None
+    human_role: Optional[Any] = None
+    repetition: Optional[Any] = None
+    bottleneck: Optional[Any] = None
+    efficiency: Optional[Any] = None
+    improvement: Optional[Any] = None
 
 
 class AlternativesEvaluationRequest(BaseModel):
-    need: str = Field(..., min_length=1)
-    alternatives: List[str] = Field(..., min_length=1)
+    """Request for comparative alternative evaluation."""
+
+    need: Any
+
+    second_decomposition: Optional[Dict[str, Any]] = None
+
+    alternatives: Optional[List[Dict[str, Any]]] = None
 
 
 class AIEvaluationRequest(BaseModel):
-    need: str = Field(..., min_length=1)
-    task: str = Field(..., min_length=1)
-    alternatives: List[str] = Field(..., min_length=1)
+    """Request for AI evaluation."""
+
+    need: Any
+
+    task: Optional[Any] = None
+
+    alternatives: Optional[Any] = None
+
+    solution_evaluation: Optional[Dict[str, Any]] = None
+
+
+class CapabilityDiagnosisRequest(BaseModel):
+    """Request for capability diagnosis."""
+
+    need: Any
+
+    business_map: Optional[Dict[str, Any]] = None
+
+
+class SolutionEvaluationRequest(BaseModel):
+    """Request for solution evaluation."""
+
+    need: Any
+
+    alternatives: Optional[Dict[str, Any]] = None
+
+
+class WorkDesignRequest(BaseModel):
+    """Request for work design."""
+
+    need: Any
+
+    second_decomposition: Optional[Dict[str, Any]] = None
+
+    ai_evaluation: Optional[Dict[str, Any]] = None
+
+
+class AgentSpecificationRequest(BaseModel):
+    """Request for specialized agent specification."""
+
+    need: Any
+
+    ai_evaluation: Optional[Dict[str, Any]] = None
+
+    work_design: Optional[Dict[str, Any]] = None
+
+    solution_evaluation: Optional[Dict[str, Any]] = None
+
+
+class OpportunityIdentificationRequest(BaseModel):
+    """Request for opportunity identification."""
+
+    need: Any
+
+    solution_evaluation: Optional[Dict[str, Any]] = None
+
+    ai_evaluation: Optional[Dict[str, Any]] = None
+
+    work_design: Optional[Dict[str, Any]] = None
+
+    agent_specification: Optional[Dict[str, Any]] = None
+
+
+class DiagnosticGenerationRequest(BaseModel):
+    """Request for final diagnostic generation."""
+
+    business: Any
+    context: Any
+    objective: Any
+    need: Any
+
+    capability: Optional[Dict[str, Any]] = None
+    gap: Any = None
+    reality_gate: Optional[Dict[str, Any]] = None
+    alternatives: Optional[Dict[str, Any]] = None
+    solution_evaluation: Optional[Dict[str, Any]] = None
+    ai_evaluation: Optional[Dict[str, Any]] = None
+    work_design: Optional[Dict[str, Any]] = None
+    agent_specification: Optional[Dict[str, Any]] = None
+    opportunities: Optional[Dict[str, Any]] = None
