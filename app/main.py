@@ -17,6 +17,8 @@ from fastapi import FastAPI
 from app.models import (
     AnalyzeRequest,
     AnalyzeResponse,
+    BusinessDecompositionRequest,
+    NeedIdentificationRequest,
     CapabilityDiagnosisRequest,
     RealityGateRequest,
     TaskDecompositionRequest,
@@ -98,7 +100,7 @@ def analyze_endpoint(request: AnalyzeRequest):
 
 @app.post("/v1/business/decompose")
 def business_decompose_endpoint(
-    request: AnalyzeRequest,
+    request: BusinessDecompositionRequest,
 ):
     """Perform the initial business decomposition."""
     return decompose_business(
@@ -109,7 +111,7 @@ def business_decompose_endpoint(
 
 @app.post("/v1/needs/identify")
 def needs_identify_endpoint(
-    request: AnalyzeRequest,
+    request: NeedIdentificationRequest,
 ):
     """Identify the real business need."""
     return identify_need(
