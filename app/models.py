@@ -67,6 +67,52 @@ class AnalyzeResponse(BaseModel):
     result: Any = None
 
 
+class BusinessDecompositionRequest(BaseModel):
+    """Request for initial business decomposition."""
+
+    business: Any = Field(
+        ...,
+        description="Business or organization to be decomposed.",
+    )
+
+    context: Optional[Any] = Field(
+        default=None,
+        description="Relevant context required to understand the business.",
+    )
+
+
+class NeedIdentificationRequest(BaseModel):
+    """Request for identifying the real business need."""
+
+    business: Any = Field(
+        ...,
+        description="Business or organizational context being analyzed.",
+    )
+
+    objective: Any = Field(
+        ...,
+        description="Desired business result or objective.",
+    )
+
+    context: Optional[Any] = Field(
+        default=None,
+        description="Relevant business context.",
+    )
+
+    evidence: Optional[Any] = Field(
+        default=None,
+        description="Available evidence supporting need identification.",
+    )
+
+
+class CapabilityDiagnosisRequest(BaseModel):
+    """Request for capability diagnosis."""
+
+    need: Any
+
+    business_map: Optional[Dict[str, Any]] = None
+
+
 class RealityGateRequest(BaseModel):
     """Request for Reality Gate evaluation."""
 
@@ -93,26 +139,45 @@ class TaskDecompositionRequest(BaseModel):
     reality_gate: Optional[Dict[str, Any]] = None
 
     area: Optional[str] = None
+
     function: Optional[str] = None
+
     process: Optional[str] = None
+
     activity: Optional[str] = None
+
     task: Optional[str] = None
 
     actor: Optional[str] = None
+
     frequency: Optional[str] = None
-    time_required: Optional[Any] = None
+
+    time: Optional[Any] = None
+
     volume: Optional[Any] = None
+
     input_data: Optional[Any] = None
+
     information: Optional[Any] = None
+
     documents: Optional[Any] = None
+
     decision: Optional[Any] = None
+
     complexity: Optional[Any] = None
+
     errors: Optional[Any] = None
+
     dependency: Optional[Any] = None
+
     human_role: Optional[Any] = None
+
     repetition: Optional[Any] = None
+
     bottleneck: Optional[Any] = None
+
     efficiency: Optional[Any] = None
+
     improvement: Optional[Any] = None
 
 
@@ -126,6 +191,14 @@ class AlternativesEvaluationRequest(BaseModel):
     alternatives: Optional[List[Dict[str, Any]]] = None
 
 
+class SolutionEvaluationRequest(BaseModel):
+    """Request for solution evaluation."""
+
+    need: Any
+
+    alternatives: Optional[Dict[str, Any]] = None
+
+
 class AIEvaluationRequest(BaseModel):
     """Request for AI evaluation."""
 
@@ -136,22 +209,6 @@ class AIEvaluationRequest(BaseModel):
     alternatives: Optional[Any] = None
 
     solution_evaluation: Optional[Dict[str, Any]] = None
-
-
-class CapabilityDiagnosisRequest(BaseModel):
-    """Request for capability diagnosis."""
-
-    need: Any
-
-    business_map: Optional[Dict[str, Any]] = None
-
-
-class SolutionEvaluationRequest(BaseModel):
-    """Request for solution evaluation."""
-
-    need: Any
-
-    alternatives: Optional[Dict[str, Any]] = None
 
 
 class WorkDesignRequest(BaseModel):
@@ -194,16 +251,27 @@ class DiagnosticGenerationRequest(BaseModel):
     """Request for final diagnostic generation."""
 
     business: Any
+
     context: Any
+
     objective: Any
+
     need: Any
 
     capability: Optional[Dict[str, Any]] = None
+
     gap: Any = None
+
     reality_gate: Optional[Dict[str, Any]] = None
+
     alternatives: Optional[Dict[str, Any]] = None
+
     solution_evaluation: Optional[Dict[str, Any]] = None
+
     ai_evaluation: Optional[Dict[str, Any]] = None
+
     work_design: Optional[Dict[str, Any]] = None
+
     agent_specification: Optional[Dict[str, Any]] = None
+
     opportunities: Optional[Dict[str, Any]] = None
