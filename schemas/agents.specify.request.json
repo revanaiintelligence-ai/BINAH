@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/agents.specify.request.json",
+  "title": "BINAH Agent Specification Request",
+  "description": "Request contract for specifying a specialized AI agent only when justified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
+  "properties": {
+    "need": {
+      "description": "Validated business need being addressed."
+    },
+    "ai_evaluation": {
+      "description": "AI evaluation establishing whether agent architecture is justified."
+    },
+    "work_design": {
+      "description": "Work design for the affected process or task."
+    },
+    "solution_evaluation": {
+      "description": "Comparative solution evaluation supporting the agent decision."
+    }
+  }
+}
