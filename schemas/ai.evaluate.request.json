@@ -1,29 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/ai.evaluate.request.json",
   "title": "BINAH AI Evaluation Request",
+  "description": "Request contract for evaluating whether, where, and how artificial intelligence should participate in solving a validated business need.",
   "type": "object",
-  "required": ["need", "gap", "alternatives"],
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
   "properties": {
     "need": {
-      "type": "string",
-      "minLength": 1
+      "description": "Validated business need being evaluated for AI utility."
     },
-    "gap": {
-      "type": "string",
-      "minLength": 1
+    "task": {
+      "description": "Task or task context being considered for AI application."
     },
     "alternatives": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string"
-      }
+      "description": "Alternative solution options evaluated before AI consideration."
     },
-    "evidence": {
-      "type": "array",
-      "items": {
-        "$ref": "evidence.json"
-      }
+    "solution_evaluation": {
+      "description": "Comparative solution evaluation used to determine whether AI is justified."
     }
   }
 }
