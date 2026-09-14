@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binah-api/schema/work.design.request.json",
+  "title": "BINAH Work Design Request",
+  "description": "Request contract for designing the required work structure for a validated business need.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "need"
+  ],
+  "properties": {
+    "need": {
+      "description": "Validated business need being addressed."
+    },
+    "second_decomposition": {
+      "description": "Second-level decomposition of the affected work."
+    },
+    "ai_evaluation": {
+      "description": "AI evaluation, when AI has been considered."
+    }
+  }
+}
