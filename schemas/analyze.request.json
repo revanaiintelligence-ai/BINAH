@@ -1,27 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "BINAH Analyze Request",
+  "$id": "https://binah-api/schema/analyze.request.json",
+  "title": "BINAH Analysis Request",
+  "description": "Request contract for the complete BINAH v0.2 analysis.",
   "type": "object",
-  "required": ["problem"],
+  "additionalProperties": false,
+  "required": [
+    "business",
+    "context",
+    "objective"
+  ],
   "properties": {
-    "problem": {
-      "type": "string",
-      "minLength": 1
+    "business": {
+      "description": "Business or organizational context being analyzed."
     },
-    "business_context": {
-      "type": ["string", "null"]
+    "context": {
+      "description": "Relevant business context required to understand the situation."
     },
-    "current_process": {
-      "type": ["string", "null"]
+    "objective": {
+      "description": "Desired business result or objective."
     },
-    "desired_outcome": {
-      "type": ["string", "null"]
-    },
-    "constraints": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "evidence": {
+      "description": "Available evidence supporting the analysis."
     }
   }
 }
