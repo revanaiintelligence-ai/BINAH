@@ -7,6 +7,7 @@ This module is responsible only for:
 - API application configuration
 - HTTP routes
 - request validation through Pydantic models
+- translating API contracts into module contracts
 - delegation to BINAH analytical modules
 
 Business methodology and analytical logic remain outside this layer.
@@ -85,17 +86,28 @@ def health():
     response_model=AnalyzeResponse,
 )
 def analyze_endpoint(request: AnalyzeRequest):
-    """
-    Execute the complete BINAH analytical workflow.
+    """Execute the complete BINAH analytical workflow."""
 
-    This is the primary endpoint.
-    """
-    return run_binah_analysis(
+    result = run_binah_analysis(
         business=request.business,
         context=request.context,
         objective=request.objective,
         evidence=request.evidence,
     )
+
+    if isinstance(result, dict):
+        result.setdefault("methodology", "BINAH")
+        result.setdefault("version", BINAH_VERSION)
+        result.setdefault("business", request.business)
+        result.setdefault("context", request.context)
+        result.setdefault("objective", request.objective)
+
+        # Public API contract uses `trace`.
+        # Internal orchestrator uses `traceability`.
+        if "trace" not in result and "traceability" in result:
+            result["trace"] = result["traceability"]
+
+    return result
 
 
 @app.post("/v1/business/decompose")
@@ -103,6 +115,7 @@ def business_decompose_endpoint(
     request: BusinessDecompositionRequest,
 ):
     """Perform the initial business decomposition."""
+
     return decompose_business(
         business=request.business,
         context=request.context,
@@ -113,11 +126,18 @@ def business_decompose_endpoint(
 def needs_identify_endpoint(
     request: NeedIdentificationRequest,
 ):
-    """Identify the real business need."""
+    """Identify and structure the business need."""
+
+    business_map = decompose_business(
+        business=request.business,
+        context=request.context,
+    )
+
     return identify_need(
         business=request.business,
         context=request.context,
         objective=request.objective,
+        business_map=business_map,
         evidence=request.evidence,
     )
 
@@ -126,7 +146,8 @@ def needs_identify_endpoint(
 def capability_diagnose_endpoint(
     request: CapabilityDiagnosisRequest,
 ):
-    """Diagnose current capability against required capability."""
+    """Diagnose required capability, current capability, and gap."""
+
     return diagnose_capability(
         need=request.need,
         business_map=request.business_map,
@@ -138,12 +159,13 @@ def reality_gate_endpoint(
     request: RealityGateRequest,
 ):
     """Evaluate whether the need passes the Reality Gate."""
+
     return evaluate_reality_gate(
         need=request.need,
         evidence=request.evidence,
-        consequences=request.consequences,
-        exists=request.exists,
-        wants_to_solve=request.wants_to_solve,
+        relevant_consequences=request.consequences,
+        exists_currently=request.exists,
+        desired_by_business=request.wants_to_solve,
         capability_insufficient=request.capability_insufficient,
     )
 
@@ -152,7 +174,15 @@ def reality_gate_endpoint(
 def tasks_decompose_endpoint(
     request: TaskDecompositionRequest,
 ):
-    """Perform the second-level task decomposition."""
+    """
+    Perform the second-level task decomposition.
+
+    The current tasks.py contract accepts only:
+    need, business_map, and reality_gate.
+    Detailed task variables are populated later through
+    tasks.py functions such as define_task().
+    """
+
     return decompose_need_tasks(
         need=request.need,
         business_map=request.business_map,
@@ -165,9 +195,12 @@ def alternatives_evaluate_endpoint(
     request: AlternativesEvaluationRequest,
 ):
     """
-    Evaluate human, process, software, traditional automation,
-    AI, and hybrid alternatives.
+    Prepare the available alternatives for evaluation.
+
+    The current alternatives.py contract accepts:
+    need and second_decomposition.
     """
+
     return evaluate_alternatives(
         need=request.need,
         second_decomposition=request.second_decomposition,
@@ -178,7 +211,8 @@ def alternatives_evaluate_endpoint(
 def solutions_evaluate_endpoint(
     request: SolutionEvaluationRequest,
 ):
-    """Evaluate and compare candidate solutions."""
+    """Prepare and evaluate candidate solutions."""
+
     return evaluate_solutions(
         need=request.need,
         alternatives=request.alternatives,
@@ -190,6 +224,7 @@ def ai_evaluate_endpoint(
     request: AIEvaluationRequest,
 ):
     """Evaluate whether and how AI should participate."""
+
     return evaluate_ai(
         need=request.need,
         task=request.task,
@@ -203,6 +238,7 @@ def work_design_endpoint(
     request: WorkDesignRequest,
 ):
     """Design the required work structure."""
+
     return design_work(
         need=request.need,
         second_decomposition=request.second_decomposition,
@@ -215,6 +251,7 @@ def agents_specify_endpoint(
     request: AgentSpecificationRequest,
 ):
     """Specify a specialized agent only when justified."""
+
     return specify_agent(
         need=request.need,
         ai_evaluation=request.ai_evaluation,
@@ -227,7 +264,8 @@ def agents_specify_endpoint(
 def opportunities_identify_endpoint(
     request: OpportunityIdentificationRequest,
 ):
-    """Identify and prioritize business opportunities."""
+    """Identify business opportunities from the analysis."""
+
     return identify_opportunities(
         need=request.need,
         solution_evaluation=request.solution_evaluation,
@@ -242,6 +280,7 @@ def diagnostic_generate_endpoint(
     request: DiagnosticGenerationRequest,
 ):
     """Generate the final BINAH diagnostic."""
+
     return generate_diagnostic(
         business=request.business,
         context=request.context,
