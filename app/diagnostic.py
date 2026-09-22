@@ -83,6 +83,7 @@ def generate_diagnostic(
         return {
             "status": "DIAGNOSTIC_INCOMPLETE",
             "result_type": "NEED_NOT_VALIDATED",
+            "result": "NEED_NOT_VALIDATED",
             "business": business,
             "context": context,
             "objective": objective,
@@ -149,6 +150,7 @@ def generate_diagnostic(
     return {
         "status": "DIAGNOSTIC_READY",
         "result_type": result_type,
+        "result": result_type,
         "business": business,
         "context": context,
         "objective": objective,
@@ -177,6 +179,7 @@ def generate_diagnostic(
             {
                 "status": "DIAGNOSTIC_READY",
                 "result_type": result_type,
+                "result": result_type,
                 "need": normalized_need,
                 "finding": finding,
                 "recommendation": recommendation,
@@ -776,6 +779,7 @@ def _stop_diagnostic(
     return {
         "status": "STOP_NEED_NOT_VALIDATED",
         "result_type": "NEED_NOT_VALIDATED",
+        "result": "NEED_NOT_VALIDATED",
         "finding": {
             "statement": reason,
         },
