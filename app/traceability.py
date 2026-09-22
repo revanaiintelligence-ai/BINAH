@@ -61,10 +61,17 @@ def validate_trace(trace: Dict[str, Any]) -> Dict[str, Any]:
 def add_trace_stage(
     trace: Dict[str, Any],
     stage: str,
-    value: Any,
+    value: Any = None,
+    *,
+    data: Any = None,
 ) -> Dict[str, Any]:
     """
     Add or update a traceability stage.
+
+    `value` is the canonical parameter.
+
+    `data` is accepted as a compatibility alias because
+    existing BINAH orchestration code may use `data=`.
     """
 
     if stage not in TRACE_STAGES:
@@ -72,7 +79,13 @@ def add_trace_stage(
             f"Invalid traceability stage: {stage}"
         )
 
-    updated_trace = dict(trace)
-    updated_trace[stage] = value
+    if value is not None and data is not None:
+        raise ValueError(
+            "Provide either 'value' or 'data', not both."
+        )
 
-    return updated_trace
+    stage_value = value if value is not None else data
+
+    trace[stage] = stage_value
+
+    return trace
