@@ -82,6 +82,7 @@ result: Dict[str, Any] = {
     "capability": None,
     "gap": None,
     "reality_gate": None,
+    "clarification": None,
     "second_decomposition": None,
     "alternatives": None,
     "solution_evaluation": None,
@@ -185,10 +186,6 @@ reality_status = (
     else None
 )
 
-# ---------------------------------------------------------
-# 4A. REALITY GATE REJECTED
-# ---------------------------------------------------------
-
 if reality_status == "REJECTED":
     result["status"] = "STOP_NEED_REJECTED"
 
@@ -224,19 +221,6 @@ if reality_status == "REJECTED":
 
     return result
 
-# ---------------------------------------------------------
-# 4B. REALITY GATE INCOMPLETE
-# ---------------------------------------------------------
-#
-# BINAH does not invent missing information.
-#
-# WTM is the clarification layer.
-#
-# The analysis stops here temporarily and returns the exact
-# information that must be clarified before the Reality Gate
-# can authorize continuation.
-# ---------------------------------------------------------
-
 if reality_status == "INCOMPLETE":
     result["status"] = "NEED_CLARIFICATION"
 
@@ -260,14 +244,6 @@ if reality_status == "INCOMPLETE":
     )
 
     return result
-
-# ---------------------------------------------------------
-# 4C. DEFENSIVE FALLBACK
-# ---------------------------------------------------------
-#
-# A malformed or unexpected Reality Gate response must not
-# authorize continuation.
-# ---------------------------------------------------------
 
 if not _reality_gate_validated(reality_gate):
     result["status"] = "STOP_NEED_NOT_VALIDATED"
@@ -479,13 +455,11 @@ capability: Any,
 """
 Prepare the exact inputs required by the Reality Gate.
 
-The needs module returns the structured need inside the
-'need' property. The Reality Gate operates on that actual
-need definition rather than on the complete wrapper.
+Missing information remains UNKNOWN and is never converted
+into FALSE.
 """
 
 normalized_need = _extract_defined_need(need)
-
 normalized_evidence = _normalize_evidence(evidence)
 
 relevant_consequences = _extract_value(
@@ -493,6 +467,12 @@ relevant_consequences = _extract_value(
     "consequences",
     default=None,
 )
+
+if relevant_consequences is None:
+    relevant_consequences = _extract_evidence_value(
+        normalized_evidence,
+        "consequences",
+    )
 
 exists_currently = _extract_boolean(
     normalized_need,
@@ -505,6 +485,18 @@ if exists_currently is None:
         normalized_need,
         "exists",
         default=None,
+    )
+
+if exists_currently is None:
+    exists_currently = _extract_evidence_boolean(
+        normalized_evidence,
+        "exists_currently",
+    )
+
+if exists_currently is None:
+    exists_currently = _extract_evidence_boolean(
+        normalized_evidence,
+        "exists",
     )
 
 desired_by_business = _extract_boolean(
@@ -520,9 +512,27 @@ if desired_by_business is None:
         default=None,
     )
 
+if desired_by_business is None:
+    desired_by_business = _extract_evidence_boolean(
+        normalized_evidence,
+        "desired_by_business",
+    )
+
+if desired_by_business is None:
+    desired_by_business = _extract_evidence_boolean(
+        normalized_evidence,
+        "wants_to_solve",
+    )
+
 capability_insufficient = _extract_capability_insufficient(
     capability
 )
+
+if capability_insufficient is None:
+    capability_insufficient = _extract_evidence_boolean(
+        normalized_evidence,
+        "capability_insufficient",
+    )
 
 return evaluate_reality_gate(
     need=normalized_need,
@@ -538,8 +548,6 @@ need: Any,
 ) -> Dict[str, Any]:
 """
 Extract the actual need definition from the needs module output.
-
-If the module already returns a direct need structure, preserve it.
 """
 
 if not isinstance(need, dict):
@@ -556,8 +564,7 @@ def _normalize_evidence(
 evidence: Any,
 ) -> list:
 """
-Normalize evidence for the Reality Gate without assigning
-evidentiary validity.
+Normalize evidence for the Reality Gate.
 """
 
 if evidence is None:
@@ -598,16 +605,8 @@ def _extract_capability_insufficient(
 capability: Any,
 ) -> bool | None:
 """
-Determine whether the capability diagnosis establishes
-insufficient current capability.
-
-Returns:
-
-    True  -> capability is established as insufficient
-    False -> capability is established as sufficient
-    None  -> capability status is unknown
-
-UNKNOWN must remain UNKNOWN.
+Determine whether current capability is established as
+insufficient, sufficient, or unknown.
 """
 
 if not isinstance(capability, dict):
@@ -670,9 +669,7 @@ key: str,
 default: bool | None,
 ) -> bool | None:
 """
-Safely extract a boolean from a module result.
-
-Unknown or absent information remains None.
+Safely extract a boolean. Unknown or absent information remains None.
 """
 
 if isinstance(source, dict):
@@ -719,3 +716,40 @@ if isinstance(source, dict) and key in source:
     return source[key]
 
 return default
+
+def _extract_evidence_value(
+evidence: list,
+key: str,
+) -> Any:
+"""
+Extract a structured value from evidence without deciding whether
+that evidence is true.
+"""
+
+for item in evidence:
+    if not isinstance(item, dict):
+        continue
+
+    if key in item and item[key] is not None:
+        return item[key]
+
+return None
+
+def _extract_evidence_boolean(
+evidence: list,
+key: str,
+) -> bool | None:
+"""
+Extract and normalize a boolean criterion from structured evidence.
+"""
+
+value = _extract_evidence_value(
+    evidence,
+    key,
+)
+
+return _extract_boolean(
+    {key: value},
+    key,
+    default=None,
+)
