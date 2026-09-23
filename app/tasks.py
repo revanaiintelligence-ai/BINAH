@@ -53,8 +53,9 @@ def decompose_need_tasks(
     AI should be used.
     """
 
-    gate_validated = bool(
-        reality_gate.get("validated", False)
+    gate_validated = (
+        reality_gate.get("status") == "VALIDATED"
+        or reality_gate.get("validated") is True
     )
 
     if not gate_validated:
