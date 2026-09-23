@@ -1,171 +1,262 @@
-from typing import Any, Dict, List
+"""
+BINAH — Reality Gate
+
+The Reality Gate determines whether BINAH has enough information
+to continue its analytical workflow.
+
+Important distinction:
+
+    TRUE     = condition is established
+    FALSE    = condition is contradicted / not satisfied
+    UNKNOWN  = insufficient information to determine the condition
+
+UNKNOWN must NOT be treated as FALSE.
+
+When the Gate cannot validate because information is incomplete,
+WTM may be invoked to clarify and structure the missing information.
+"""
+
+from typing import Any, Dict
 
 
 REALITY_GATE_STATUS = [
     "VALIDATED",
-    "STOP_NEED_NOT_VALIDATED",
-]
-
-
-REALITY_GATE_CRITERIA = [
-    "need_exists",
-    "sufficient_evidence",
-    "relevant_consequences",
-    "exists_currently",
-    "desired_by_business",
-    "capability_insufficient",
+    "INCOMPLETE",
+    "REJECTED",
 ]
 
 
 def evaluate_reality_gate(
     *,
     need: Dict[str, Any],
-    evidence: List[Dict[str, Any]] | None = None,
-    relevant_consequences: Any = None,
-    exists_currently: bool | None = None,
-    desired_by_business: bool | None = None,
-    capability_insufficient: bool | None = None,
+    evidence: list,
+    relevant_consequences: Any,
+    exists_currently: Any,
+    desired_by_business: Any,
+    capability_insufficient: Any,
 ) -> Dict[str, Any]:
     """
-    Evaluate whether a business need has sufficient reality
-    and evidence to proceed with deeper analysis.
+    Evaluate whether the available information is sufficient
+    to validate the business need.
 
-    BINAH principle:
-    Reality before Analysis.
+    Values may be:
 
-    The Reality Gate does not select a solution and does not
-    determine whether AI should be used.
+        True
+        False
+        None / UNKNOWN
+
+    None means that the information is not yet sufficient
+    to determine the condition.
+
+    The Gate must distinguish:
+
+        FALSE  !=  UNKNOWN
     """
 
-    normalized_evidence = evidence or []
-
-    need_exists = _need_exists(need)
-    sufficient_evidence = len(normalized_evidence) > 0
-    consequences_present = _value_exists(relevant_consequences)
-
     criteria = {
-        "need_exists": need_exists,
-        "sufficient_evidence": sufficient_evidence,
-        "relevant_consequences": consequences_present,
-        "exists_currently": exists_currently is True,
-        "desired_by_business": desired_by_business is True,
-        "capability_insufficient": capability_insufficient is True,
+        "need_exists": _evaluate_need_exists(need),
+        "sufficient_evidence": _has_evidence(evidence),
+        "relevant_consequences": _has_value(relevant_consequences),
+        "exists_currently": _normalize_boolean(
+            exists_currently
+        ),
+        "desired_by_business": _normalize_boolean(
+            desired_by_business
+        ),
+        "capability_insufficient": _normalize_boolean(
+            capability_insufficient
+        ),
     }
 
-    validated = all(criteria.values())
+    missing_information = [
+        key
+        for key, value in criteria.items()
+        if value is None
+    ]
 
-    if validated:
-        status = "VALIDATED"
-        conclusion = (
-            "The need passes the Reality Gate and can proceed "
-            "to second-level decomposition and alternative evaluation."
+    failed_criteria = [
+        key
+        for key, value in criteria.items()
+        if value is False
+    ]
+
+    if failed_criteria:
+        status = "REJECTED"
+        validated = False
+
+        reason = (
+            "The Reality Gate rejected the need because one or "
+            "more required conditions are not satisfied."
         )
-        next_action = (
-            "Proceed to second decomposition of the affected "
-            "area, process, activity, and task."
+
+    elif missing_information:
+        status = "INCOMPLETE"
+        validated = False
+
+        reason = (
+            "The Reality Gate cannot yet validate the need because "
+            "required information is incomplete or unknown."
         )
+
     else:
-        status = "STOP_NEED_NOT_VALIDATED"
-        failed_criteria = [
-            criterion
-            for criterion, passed in criteria.items()
-            if not passed
-        ]
+        status = "VALIDATED"
+        validated = True
 
-        conclusion = (
-            "The need does not currently satisfy the Reality Gate. "
-            "Analysis must stop until the failed criteria are resolved."
-        )
-
-        next_action = (
-            "Investigate and resolve the failed Reality Gate criteria: "
-            + ", ".join(failed_criteria)
-            + "."
+        reason = (
+            "All Reality Gate criteria have sufficient information "
+            "and the need is authorized to continue."
         )
 
     return {
         "status": status,
         "validated": validated,
+
         "criteria": criteria,
-        "need": need,
-        "evidence": normalized_evidence,
-        "conclusion": conclusion,
-        "next_action": next_action,
-    }
 
+        "missing_information": missing_information,
 
-def validate_reality_gate(
-    gate_result: Dict[str, Any],
-) -> Dict[str, Any]:
-    """
-    Validate the structural integrity of a Reality Gate result.
-    """
+        "failed_criteria": failed_criteria,
 
-    required_fields = [
-        "status",
-        "validated",
-        "criteria",
-        "need",
-        "evidence",
-        "conclusion",
-        "next_action",
-    ]
-
-    missing_fields = [
-        field
-        for field in required_fields
-        if field not in gate_result
-    ]
-
-    status_valid = gate_result.get("status") in REALITY_GATE_STATUS
-    validated_consistent = (
-        gate_result.get("validated") is True
-        and gate_result.get("status") == "VALIDATED"
-    ) or (
-        gate_result.get("validated") is False
-        and gate_result.get("status") == "STOP_NEED_NOT_VALIDATED"
-    )
-
-    return {
-        "valid": (
-            len(missing_fields) == 0
-            and status_valid
-            and validated_consistent
+        "requires_clarification": bool(
+            missing_information
         ),
-        "missing_fields": missing_fields,
-        "status_valid": status_valid,
-        "validated_consistent": validated_consistent,
+
+        "clarification_source": (
+            "WTM"
+            if missing_information
+            else None
+        ),
+
+        "reason": reason,
     }
 
 
-def _need_exists(need: Dict[str, Any]) -> bool:
+def _normalize_boolean(
+    value: Any,
+) -> bool | None:
     """
-    Determine whether a usable need definition exists.
+    Normalize boolean-like values.
+
+    True  -> True
+    False -> False
+    None / unknown -> None
+
+    Unknown information is deliberately preserved as UNKNOWN.
+    """
+
+    if isinstance(value, bool):
+        return value
+
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+
+        if normalized in {
+            "true",
+            "yes",
+            "si",
+            "sí",
+            "confirmed",
+            "validated",
+        }:
+            return True
+
+        if normalized in {
+            "false",
+            "no",
+            "not",
+            "rejected",
+            "contradicted",
+        }:
+            return False
+
+        if normalized in {
+            "unknown",
+            "undefined",
+            "incomplete",
+            "pending",
+            "not_known",
+            "not_available",
+        }:
+            return None
+
+    return None
+
+
+def _evaluate_need_exists(
+    need: Any,
+) -> bool | None:
+    """
+    Determine whether a need statement is actually present.
+
+    Missing information is UNKNOWN.
     """
 
     if not isinstance(need, dict):
-        return False
+        return None
 
     statement = need.get("statement")
 
+    if statement is None:
+        return None
+
     if isinstance(statement, str):
-        return bool(statement.strip())
+        if not statement.strip():
+            return None
 
-    return _value_exists(statement)
+        return True
+
+    return True
 
 
-def _value_exists(value: Any) -> bool:
+def _has_evidence(
+    evidence: Any,
+) -> bool | None:
     """
-    Determine whether a required value contains usable information.
+    Determine whether evidence has been supplied.
+
+    No evidence is treated as UNKNOWN rather than FALSE because
+    absence of supplied evidence does not prove that no evidence
+    exists in reality.
+    """
+
+    if evidence is None:
+        return None
+
+    if isinstance(evidence, list):
+        return True if len(evidence) > 0 else None
+
+    if isinstance(evidence, dict):
+        if not evidence:
+            return None
+
+        return True
+
+    return True
+
+
+def _has_value(
+    value: Any,
+) -> bool | None:
+    """
+    Determine whether a relevant consequence/value has been
+    identified.
+
+    Missing information remains UNKNOWN.
     """
 
     if value is None:
-        return False
+        return None
 
     if isinstance(value, str):
-        return bool(value.strip())
+        return True if value.strip() else None
 
-    if isinstance(value, (list, tuple, set, dict)):
-        return len(value) > 0
+    if isinstance(value, list):
+        return True if len(value) > 0 else None
+
+    if isinstance(value, dict):
+        return True if value else None
 
     return True
