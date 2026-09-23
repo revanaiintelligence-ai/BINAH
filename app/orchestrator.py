@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-
 from app.agents import specify_agent
 from app.ai import evaluate_ai
 from app.alternatives import evaluate_alternatives
@@ -15,333 +14,183 @@ from app.tasks import decompose_need_tasks
 from app.traceability import add_trace_stage, create_trace
 from app.work import design_work
 
-
 BINAH_VERSION = "0.2"
 
-
 ANALYSIS_STAGES = [
-    "business_map",
-    "need",
-    "capability",
-    "reality_gate",
-    "second_decomposition",
-    "alternatives",
-    "solution_evaluation",
-    "ai_evaluation",
-    "work_design",
-    "agent_specification",
-    "opportunities",
-    "diagnostic",
+"business_map",
+"need",
+"capability",
+"reality_gate",
+"second_decomposition",
+"alternatives",
+"solution_evaluation",
+"ai_evaluation",
+"work_design",
+"agent_specification",
+"opportunities",
+"diagnostic",
 ]
 
-
 def run_binah_analysis(
-    *,
-    business: str,
-    context: str,
-    objective: str,
-    evidence: Any = None,
+*,
+business: str,
+context: str,
+objective: str,
+evidence: Any = None,
 ) -> Dict[str, Any]:
-    """
-    Execute the complete BINAH analytical workflow.
+"""
+Execute the complete BINAH analytical workflow.
 
-    BINAH principle:
+BINAH principle:
 
-        Need before AI.
+    Need before AI.
 
-    The orchestrator coordinates the analytical modules.
-    It does not implement their methodology.
+The orchestrator coordinates the analytical modules.
+It does not implement their methodology.
 
-    Flow:
+Flow:
 
-        Business
-        → Need
-        → Capability
-        → Reality Gate
-        → Second Decomposition
-        → Alternatives
-        → Solutions
-        → AI
-        → Work
-        → Agent
-        → Opportunities
-        → Diagnostic
-    """
+    Business
+    → Need
+    → Capability
+    → Reality Gate
+    → Second Decomposition
+    → Alternatives
+    → Solutions
+    → AI
+    → Work
+    → Agent
+    → Opportunities
+    → Diagnostic
+"""
 
-    trace = create_trace(
-        input_data={
-            "business": business,
-            "context": context,
-            "objective": objective,
-            "evidence": evidence,
-        }
-    )
-
-    result: Dict[str, Any] = {
-        "methodology": "BINAH",
-        "version": BINAH_VERSION,
-        "status": "ANALYSIS_STARTED",
-        "business_map": None,
-        "need": None,
-        "capability": None,
-        "gap": None,
-        "reality_gate": None,
-        "second_decomposition": None,
-        "alternatives": None,
-        "solution_evaluation": None,
-        "ai_evaluation": None,
-        "work_design": None,
-        "agent_specification": None,
-        "opportunities": None,
-        "diagnostic": None,
-        "traceability": trace,
+trace = create_trace(
+    input_data={
+        "business": business,
+        "context": context,
+        "objective": objective,
+        "evidence": evidence,
     }
+)
 
-    # ---------------------------------------------------------
-    # 1. BUSINESS DECOMPOSITION
-    # ---------------------------------------------------------
+result: Dict[str, Any] = {
+    "methodology": "BINAH",
+    "version": BINAH_VERSION,
+    "status": "ANALYSIS_STARTED",
+    "business_map": None,
+    "need": None,
+    "capability": None,
+    "gap": None,
+    "reality_gate": None,
+    "second_decomposition": None,
+    "alternatives": None,
+    "solution_evaluation": None,
+    "ai_evaluation": None,
+    "work_design": None,
+    "agent_specification": None,
+    "opportunities": None,
+    "diagnostic": None,
+    "traceability": trace,
+}
 
-    business_map = decompose_business(
-        business=business,
-        context=context,
-    )
+# ---------------------------------------------------------
+# 1. BUSINESS DECOMPOSITION
+# ---------------------------------------------------------
 
-    result["business_map"] = business_map
+business_map = decompose_business(
+    business=business,
+    context=context,
+)
 
-    add_trace_stage(
-        trace,
-        stage="observation",
-        data=business_map,
-    )
+result["business_map"] = business_map
 
-    # ---------------------------------------------------------
-    # 2. NEED IDENTIFICATION
-    # ---------------------------------------------------------
+add_trace_stage(
+    trace,
+    stage="observation",
+    data=business_map,
+)
 
-    need = identify_need(
-        business=business,
-        context=context,
-        objective=objective,
-        business_map=business_map,
-        evidence=evidence,
-    )
+# ---------------------------------------------------------
+# 2. NEED IDENTIFICATION
+# ---------------------------------------------------------
 
-    result["need"] = need
+need = identify_need(
+    business=business,
+    context=context,
+    objective=objective,
+    business_map=business_map,
+    evidence=evidence,
+)
 
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=need,
-    )
+result["need"] = need
 
-    # ---------------------------------------------------------
-    # 3. CAPABILITY DIAGNOSIS
-    # ---------------------------------------------------------
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=need,
+)
 
-    capability_result = diagnose_capability(
-        need=need,
-        business_map=business_map,
-    )
+# ---------------------------------------------------------
+# 3. CAPABILITY DIAGNOSIS
+# ---------------------------------------------------------
 
-    result["capability"] = capability_result
+capability_result = diagnose_capability(
+    need=need,
+    business_map=business_map,
+)
 
-    if isinstance(capability_result, dict):
-        result["gap"] = capability_result.get("gap")
+result["capability"] = capability_result
 
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=capability_result,
-    )
+if isinstance(capability_result, dict):
+    result["gap"] = capability_result.get("gap")
 
-    # ---------------------------------------------------------
-    # 4. REALITY GATE
-    # ---------------------------------------------------------
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=capability_result,
+)
 
-    reality_gate = _run_reality_gate(
-        need=need,
-        evidence=evidence,
-        capability=capability_result,
-    )
+# ---------------------------------------------------------
+# 4. REALITY GATE
+# ---------------------------------------------------------
 
-    result["reality_gate"] = reality_gate
+reality_gate = _run_reality_gate(
+    need=need,
+    evidence=evidence,
+    capability=capability_result,
+)
 
-    add_trace_stage(
-        trace,
-        stage="reasoning",
-        data=reality_gate,
-    )
+result["reality_gate"] = reality_gate
 
-    # ---------------------------------------------------------
-    # STOP CONDITION
-    # ---------------------------------------------------------
+add_trace_stage(
+    trace,
+    stage="reasoning",
+    data=reality_gate,
+)
 
-    if not _reality_gate_validated(reality_gate):
-        result["status"] = "STOP_NEED_NOT_VALIDATED"
+# ---------------------------------------------------------
+# REALITY GATE DECISION
+# ---------------------------------------------------------
+#
+# VALIDATED  → continue to second decomposition
+# INCOMPLETE → request clarification through WTM
+# REJECTED   → stop
+#
+# UNKNOWN is never treated as FALSE.
+# ---------------------------------------------------------
 
-        diagnostic = generate_diagnostic(
-            business=business,
-            context=context,
-            objective=objective,
-            need=need,
-            capability=capability_result,
-            gap=result["gap"],
-            reality_gate=reality_gate,
-            alternatives=None,
-            solution_evaluation=None,
-            ai_evaluation=None,
-            work_design=None,
-            agent_specification=None,
-            opportunities=None,
-        )
+reality_status = (
+    reality_gate.get("status")
+    if isinstance(reality_gate, dict)
+    else None
+)
 
-        result["diagnostic"] = diagnostic
+# ---------------------------------------------------------
+# 4A. REALITY GATE REJECTED
+# ---------------------------------------------------------
 
-        if isinstance(diagnostic, dict):
-            result["status"] = diagnostic.get(
-                "status",
-                "STOP_NEED_NOT_VALIDATED",
-            )
-
-        add_trace_stage(
-            trace,
-            stage="finding",
-            data=diagnostic,
-        )
-
-        return result
-
-    # ---------------------------------------------------------
-    # 5. SECOND DECOMPOSITION
-    # ---------------------------------------------------------
-
-    second_decomposition = decompose_need_tasks(
-        need=need,
-        business_map=business_map,
-        reality_gate=reality_gate,
-    )
-
-    result["second_decomposition"] = second_decomposition
-
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=second_decomposition,
-    )
-
-    # ---------------------------------------------------------
-    # 6. ALTERNATIVES
-    # ---------------------------------------------------------
-
-    alternatives = evaluate_alternatives(
-        need=need,
-        second_decomposition=second_decomposition,
-    )
-
-    result["alternatives"] = alternatives
-
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=alternatives,
-    )
-
-    # ---------------------------------------------------------
-    # 7. SOLUTION EVALUATION
-    # ---------------------------------------------------------
-
-    solution_evaluation = evaluate_solutions(
-        need=need,
-        alternatives=alternatives,
-    )
-
-    result["solution_evaluation"] = solution_evaluation
-
-    add_trace_stage(
-        trace,
-        stage="reasoning",
-        data=solution_evaluation,
-    )
-
-    # ---------------------------------------------------------
-    # 8. AI EVALUATION
-    # ---------------------------------------------------------
-
-    ai_evaluation = evaluate_ai(
-        need=need,
-        task=second_decomposition,
-        alternatives=alternatives,
-        solution_evaluation=solution_evaluation,
-    )
-
-    result["ai_evaluation"] = ai_evaluation
-
-    add_trace_stage(
-        trace,
-        stage="reasoning",
-        data=ai_evaluation,
-    )
-
-    # ---------------------------------------------------------
-    # 9. WORK DESIGN
-    # ---------------------------------------------------------
-
-    work_design = design_work(
-        need=need,
-        second_decomposition=second_decomposition,
-        ai_evaluation=ai_evaluation,
-    )
-
-    result["work_design"] = work_design
-
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=work_design,
-    )
-
-    # ---------------------------------------------------------
-    # 10. AGENT SPECIFICATION
-    # ---------------------------------------------------------
-
-    agent_specification = specify_agent(
-        need=need,
-        ai_evaluation=ai_evaluation,
-        work_design=work_design,
-        solution_evaluation=solution_evaluation,
-    )
-
-    result["agent_specification"] = agent_specification
-
-    add_trace_stage(
-        trace,
-        stage="analysis",
-        data=agent_specification,
-    )
-
-    # ---------------------------------------------------------
-    # 11. OPPORTUNITIES
-    # ---------------------------------------------------------
-
-    opportunities = identify_opportunities(
-        need=need,
-        solution_evaluation=solution_evaluation,
-        ai_evaluation=ai_evaluation,
-        work_design=work_design,
-        agent_specification=agent_specification,
-    )
-
-    result["opportunities"] = opportunities
-
-    add_trace_stage(
-        trace,
-        stage="finding",
-        data=opportunities,
-    )
-
-    # ---------------------------------------------------------
-    # 12. FINAL DIAGNOSTIC
-    # ---------------------------------------------------------
+if reality_status == "REJECTED":
+    result["status"] = "STOP_NEED_REJECTED"
 
     diagnostic = generate_diagnostic(
         business=business,
@@ -351,224 +200,522 @@ def run_binah_analysis(
         capability=capability_result,
         gap=result["gap"],
         reality_gate=reality_gate,
-        alternatives=alternatives,
-        solution_evaluation=solution_evaluation,
-        ai_evaluation=ai_evaluation,
-        work_design=work_design,
-        agent_specification=agent_specification,
-        opportunities=opportunities,
+        alternatives=None,
+        solution_evaluation=None,
+        ai_evaluation=None,
+        work_design=None,
+        agent_specification=None,
+        opportunities=None,
     )
 
     result["diagnostic"] = diagnostic
 
+    if isinstance(diagnostic, dict):
+        result["status"] = diagnostic.get(
+            "status",
+            "STOP_NEED_REJECTED",
+        )
+
     add_trace_stage(
         trace,
-        stage="recommendation",
+        stage="finding",
         data=diagnostic,
     )
+
+    return result
+
+# ---------------------------------------------------------
+# 4B. REALITY GATE INCOMPLETE
+# ---------------------------------------------------------
+#
+# BINAH does not invent missing information.
+#
+# WTM is the clarification layer.
+#
+# The analysis stops here temporarily and returns the exact
+# information that must be clarified before the Reality Gate
+# can authorize continuation.
+# ---------------------------------------------------------
+
+if reality_status == "INCOMPLETE":
+    result["status"] = "NEED_CLARIFICATION"
+
+    clarification = {
+        "required": True,
+        "source": "WTM",
+        "missing_information": reality_gate.get(
+            "missing_information",
+            [],
+        ),
+        "reality_gate_status": "INCOMPLETE",
+        "next_step": "WTM_CLARIFICATION",
+    }
+
+    result["clarification"] = clarification
+
+    add_trace_stage(
+        trace,
+        stage="finding",
+        data=clarification,
+    )
+
+    return result
+
+# ---------------------------------------------------------
+# 4C. DEFENSIVE FALLBACK
+# ---------------------------------------------------------
+#
+# A malformed or unexpected Reality Gate response must not
+# authorize continuation.
+# ---------------------------------------------------------
+
+if not _reality_gate_validated(reality_gate):
+    result["status"] = "STOP_NEED_NOT_VALIDATED"
+
+    diagnostic = generate_diagnostic(
+        business=business,
+        context=context,
+        objective=objective,
+        need=need,
+        capability=capability_result,
+        gap=result["gap"],
+        reality_gate=reality_gate,
+        alternatives=None,
+        solution_evaluation=None,
+        ai_evaluation=None,
+        work_design=None,
+        agent_specification=None,
+        opportunities=None,
+    )
+
+    result["diagnostic"] = diagnostic
 
     if isinstance(diagnostic, dict):
         result["status"] = diagnostic.get(
             "status",
-            "ANALYSIS_COMPLETE",
+            "STOP_NEED_NOT_VALIDATED",
         )
-    else:
-        result["status"] = "ANALYSIS_COMPLETE"
+
+    add_trace_stage(
+        trace,
+        stage="finding",
+        data=diagnostic,
+    )
 
     return result
 
+# ---------------------------------------------------------
+# 5. SECOND DECOMPOSITION
+# ---------------------------------------------------------
+
+second_decomposition = decompose_need_tasks(
+    need=need,
+    business_map=business_map,
+    reality_gate=reality_gate,
+)
+
+result["second_decomposition"] = second_decomposition
+
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=second_decomposition,
+)
+
+# ---------------------------------------------------------
+# 6. ALTERNATIVES
+# ---------------------------------------------------------
+
+alternatives = evaluate_alternatives(
+    need=need,
+    second_decomposition=second_decomposition,
+)
+
+result["alternatives"] = alternatives
+
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=alternatives,
+)
+
+# ---------------------------------------------------------
+# 7. SOLUTION EVALUATION
+# ---------------------------------------------------------
+
+solution_evaluation = evaluate_solutions(
+    need=need,
+    alternatives=alternatives,
+)
+
+result["solution_evaluation"] = solution_evaluation
+
+add_trace_stage(
+    trace,
+    stage="reasoning",
+    data=solution_evaluation,
+)
+
+# ---------------------------------------------------------
+# 8. AI EVALUATION
+# ---------------------------------------------------------
+
+ai_evaluation = evaluate_ai(
+    need=need,
+    task=second_decomposition,
+    alternatives=alternatives,
+    solution_evaluation=solution_evaluation,
+)
+
+result["ai_evaluation"] = ai_evaluation
+
+add_trace_stage(
+    trace,
+    stage="reasoning",
+    data=ai_evaluation,
+)
+
+# ---------------------------------------------------------
+# 9. WORK DESIGN
+# ---------------------------------------------------------
+
+work_design = design_work(
+    need=need,
+    second_decomposition=second_decomposition,
+    ai_evaluation=ai_evaluation,
+)
+
+result["work_design"] = work_design
+
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=work_design,
+)
+
+# ---------------------------------------------------------
+# 10. AGENT SPECIFICATION
+# ---------------------------------------------------------
+
+agent_specification = specify_agent(
+    need=need,
+    ai_evaluation=ai_evaluation,
+    work_design=work_design,
+    solution_evaluation=solution_evaluation,
+)
+
+result["agent_specification"] = agent_specification
+
+add_trace_stage(
+    trace,
+    stage="analysis",
+    data=agent_specification,
+)
+
+# ---------------------------------------------------------
+# 11. OPPORTUNITIES
+# ---------------------------------------------------------
+
+opportunities = identify_opportunities(
+    need=need,
+    solution_evaluation=solution_evaluation,
+    ai_evaluation=ai_evaluation,
+    work_design=work_design,
+    agent_specification=agent_specification,
+)
+
+result["opportunities"] = opportunities
+
+add_trace_stage(
+    trace,
+    stage="finding",
+    data=opportunities,
+)
+
+# ---------------------------------------------------------
+# 12. FINAL DIAGNOSTIC
+# ---------------------------------------------------------
+
+diagnostic = generate_diagnostic(
+    business=business,
+    context=context,
+    objective=objective,
+    need=need,
+    capability=capability_result,
+    gap=result["gap"],
+    reality_gate=reality_gate,
+    alternatives=alternatives,
+    solution_evaluation=solution_evaluation,
+    ai_evaluation=ai_evaluation,
+    work_design=work_design,
+    agent_specification=agent_specification,
+    opportunities=opportunities,
+)
+
+result["diagnostic"] = diagnostic
+
+add_trace_stage(
+    trace,
+    stage="recommendation",
+    data=diagnostic,
+)
+
+if isinstance(diagnostic, dict):
+    result["status"] = diagnostic.get(
+        "status",
+        "ANALYSIS_COMPLETE",
+    )
+else:
+    result["status"] = "ANALYSIS_COMPLETE"
+
+return result
 
 def _run_reality_gate(
-    *,
-    need: Any,
-    evidence: Any,
-    capability: Any,
+*,
+need: Any,
+evidence: Any,
+capability: Any,
 ) -> Dict[str, Any]:
-    """
-    Prepare the exact inputs required by the Reality Gate.
+"""
+Prepare the exact inputs required by the Reality Gate.
 
-    The needs module returns the structured need inside the
-    'need' property. The Reality Gate operates on that actual
-    need definition rather than on the complete wrapper.
-    """
+The needs module returns the structured need inside the
+'need' property. The Reality Gate operates on that actual
+need definition rather than on the complete wrapper.
+"""
 
-    normalized_need = _extract_defined_need(need)
+normalized_need = _extract_defined_need(need)
 
-    normalized_evidence = _normalize_evidence(evidence)
+normalized_evidence = _normalize_evidence(evidence)
 
-    relevant_consequences = _extract_value(
+relevant_consequences = _extract_value(
+    normalized_need,
+    "consequences",
+    default=None,
+)
+
+exists_currently = _extract_boolean(
+    normalized_need,
+    "exists_currently",
+    default=None,
+)
+
+if exists_currently is None:
+    exists_currently = _extract_boolean(
         normalized_need,
-        "consequences",
+        "exists",
         default=None,
     )
 
-    exists_currently = _extract_boolean(
-        normalized_need,
-        "exists_currently",
-        default=_extract_boolean(
-            normalized_need,
-            "exists",
-            default=False,
-        ),
-    )
+desired_by_business = _extract_boolean(
+    normalized_need,
+    "desired_by_business",
+    default=None,
+)
 
+if desired_by_business is None:
     desired_by_business = _extract_boolean(
         normalized_need,
-        "desired_by_business",
-        default=_extract_boolean(
-            normalized_need,
-            "wants_to_solve",
-            default=False,
-        ),
+        "wants_to_solve",
+        default=None,
     )
 
-    capability_insufficient = _extract_capability_insufficient(
-        capability
-    )
+capability_insufficient = _extract_capability_insufficient(
+    capability
+)
 
-    return evaluate_reality_gate(
-        need=normalized_need,
-        evidence=normalized_evidence,
-        relevant_consequences=relevant_consequences,
-        exists_currently=exists_currently,
-        desired_by_business=desired_by_business,
-        capability_insufficient=capability_insufficient,
-    )
-
+return evaluate_reality_gate(
+    need=normalized_need,
+    evidence=normalized_evidence,
+    relevant_consequences=relevant_consequences,
+    exists_currently=exists_currently,
+    desired_by_business=desired_by_business,
+    capability_insufficient=capability_insufficient,
+)
 
 def _extract_defined_need(
-    need: Any,
+need: Any,
 ) -> Dict[str, Any]:
-    """
-    Extract the actual need definition from the needs module output.
+"""
+Extract the actual need definition from the needs module output.
 
-    If the module already returns a direct need structure, preserve it.
-    """
+If the module already returns a direct need structure, preserve it.
+"""
 
-    if not isinstance(need, dict):
-        return {}
+if not isinstance(need, dict):
+    return {}
 
-    nested_need = need.get("need")
+nested_need = need.get("need")
 
-    if isinstance(nested_need, dict):
-        return dict(nested_need)
+if isinstance(nested_need, dict):
+    return dict(nested_need)
 
-    return dict(need)
-
+return dict(need)
 
 def _normalize_evidence(
-    evidence: Any,
+evidence: Any,
 ) -> list:
-    """
-    Normalize evidence for the Reality Gate without assigning
-    evidentiary validity.
-    """
+"""
+Normalize evidence for the Reality Gate without assigning
+evidentiary validity.
+"""
 
-    if evidence is None:
-        return []
+if evidence is None:
+    return []
 
-    if isinstance(evidence, dict):
-        items = evidence.get("items")
+if isinstance(evidence, dict):
+    items = evidence.get("items")
 
-        if isinstance(items, list):
-            return items
-
-        return [evidence]
-
-    if isinstance(evidence, list):
-        return evidence
+    if isinstance(items, list):
+        return items
 
     return [evidence]
 
+if isinstance(evidence, list):
+    return evidence
+
+return [evidence]
 
 def _reality_gate_validated(
-    reality_gate: Any,
+reality_gate: Any,
 ) -> bool:
-    """
-    Determine whether the Reality Gate authorizes continuation.
-    """
+"""
+Determine whether the Reality Gate authorizes continuation.
+"""
 
-    if not isinstance(reality_gate, dict):
-        return False
-
-    if reality_gate.get("status") == "VALIDATED":
-        return True
-
-    if reality_gate.get("validated") is True:
-        return True
-
+if not isinstance(reality_gate, dict):
     return False
 
+if reality_gate.get("status") == "VALIDATED":
+    return True
+
+if reality_gate.get("validated") is True:
+    return True
+
+return False
 
 def _extract_capability_insufficient(
-    capability: Any,
-) -> bool:
-    """
-    Determine whether the capability diagnosis establishes
-    an insufficient current capability.
-    """
+capability: Any,
+) -> bool | None:
+"""
+Determine whether the capability diagnosis establishes
+insufficient current capability.
 
-    if not isinstance(capability, dict):
-        return False
+Returns:
 
-    if capability.get("capability_insufficient") is True:
-        return True
+    True  -> capability is established as insufficient
+    False -> capability is established as sufficient
+    None  -> capability status is unknown
 
-    if capability.get("insufficient") is True:
-        return True
+UNKNOWN must remain UNKNOWN.
+"""
 
-    status = capability.get("status")
+if not isinstance(capability, dict):
+    return None
 
-    if status in {
+if capability.get("capability_insufficient") is True:
+    return True
+
+if capability.get("insufficient") is True:
+    return True
+
+if capability.get("capability_insufficient") is False:
+    return False
+
+if capability.get("insufficient") is False:
+    return False
+
+status = capability.get("capability_status")
+
+if status in {
+    "INSUFFICIENT",
+    "PARTIALLY_SUFFICIENT",
+}:
+    return True
+
+if status == "SUFFICIENT":
+    return False
+
+status = capability.get("status")
+
+if status in {
+    "INSUFFICIENT",
+    "PARTIALLY_SUFFICIENT",
+}:
+    return True
+
+if status == "SUFFICIENT":
+    return False
+
+gap = capability.get("gap")
+
+if isinstance(gap, dict):
+    gap_status = gap.get("status")
+
+    if gap_status in {
         "INSUFFICIENT",
         "PARTIALLY_SUFFICIENT",
     }:
         return True
 
-    gap = capability.get("gap")
+    if gap_status == "SUFFICIENT":
+        return False
 
-    if isinstance(gap, dict):
-        gap_status = gap.get("status")
+return None
 
-        if gap_status in {
-            "INSUFFICIENT",
-            "PARTIALLY_SUFFICIENT",
+def _extract_boolean(
+source: Any,
+key: str,
+*,
+default: bool | None,
+) -> bool | None:
+"""
+Safely extract a boolean from a module result.
+
+Unknown or absent information remains None.
+"""
+
+if isinstance(source, dict):
+    value = source.get(key)
+
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+
+        if normalized in {
+            "true",
+            "yes",
+            "si",
+            "sí",
+            "confirmed",
+            "validated",
         }:
             return True
 
-    return False
+        if normalized in {
+            "false",
+            "no",
+            "not",
+            "rejected",
+            "contradicted",
+        }:
+            return False
 
-
-def _extract_boolean(
-    source: Any,
-    key: str,
-    *,
-    default: bool,
-) -> bool:
-    """
-    Safely extract a boolean from a module result.
-    """
-
-    if isinstance(source, dict):
-        value = source.get(key)
-
-        if isinstance(value, bool):
-            return value
-
-    return default
-
+return default
 
 def _extract_value(
-    source: Any,
-    key: str,
-    *,
-    default: Any = None,
+source: Any,
+key: str,
+*,
+default: Any = None,
 ) -> Any:
-    """
-    Safely extract a value from a module result.
-    """
+"""
+Safely extract a value from a module result.
+"""
 
-    if isinstance(source, dict) and key in source:
-        return source[key]
+if isinstance(source, dict) and key in source:
+    return source[key]
 
-    return default
+return default
