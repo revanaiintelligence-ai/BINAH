@@ -122,11 +122,11 @@ class RealityGateRequest(BaseModel):
 
     consequences: Any = None
 
-    exists: bool = False
+    exists: Optional[bool] = None
 
-    wants_to_solve: bool = False
+    wants_to_solve: Optional[bool] = None
 
-    capability_insufficient: bool = False
+    capability_insufficient: Optional[bool] = None
 
 
 class TaskDecompositionRequest(BaseModel):
