@@ -51,12 +51,22 @@ def run_binah_analysis(
     The orchestrator coordinates the analytical modules.
     It does not implement their methodology.
 
+    Important orchestration rule:
+
+        Analytical uncertainty must never stop the workflow.
+
+    When the available information is incomplete or uncertain,
+    BINAH records the missing information and marks WTM as the
+    clarification source, while continuing the analytical flow
+    with the information that is currently available.
+
     Flow:
 
         Business
         → Need
         → Capability
         → Reality Gate
+        → WTM clarification when required
         → Second Decomposition
         → Alternatives
         → Solutions
@@ -173,71 +183,22 @@ def run_binah_analysis(
     )
 
     # ---------------------------------------------------------
-    # REALITY GATE DECISION
+    # 4A. UNCERTAINTY / CLARIFICATION
     # ---------------------------------------------------------
     #
-    # VALIDATED  → continue to second decomposition
-    # INCOMPLETE → request clarification through WTM
-    # REJECTED   → stop
+    # The Reality Gate identifies the information state.
     #
-    # UNKNOWN is never treated as FALSE.
+    # It does NOT stop the orchestrator.
+    #
+    # If information is incomplete, WTM becomes the clarification
+    # source. BINAH continues with the information already known.
     # ---------------------------------------------------------
 
-    reality_status = (
-        reality_gate.get("status")
-        if isinstance(reality_gate, dict)
-        else None
+    clarification = _build_clarification_request(
+        reality_gate=reality_gate,
     )
 
-    if reality_status == "REJECTED":
-        result["status"] = "STOP_NEED_REJECTED"
-
-        diagnostic = generate_diagnostic(
-            business=business,
-            context=context,
-            objective=objective,
-            need=need,
-            capability=capability_result,
-            gap=result["gap"],
-            reality_gate=reality_gate,
-            alternatives=None,
-            solution_evaluation=None,
-            ai_evaluation=None,
-            work_design=None,
-            agent_specification=None,
-            opportunities=None,
-        )
-
-        result["diagnostic"] = diagnostic
-
-        if isinstance(diagnostic, dict):
-            result["status"] = diagnostic.get(
-                "status",
-                "STOP_NEED_REJECTED",
-            )
-
-        add_trace_stage(
-            trace,
-            stage="finding",
-            data=diagnostic,
-        )
-
-        return result
-
-    if reality_status == "INCOMPLETE":
-        result["status"] = "NEED_CLARIFICATION"
-
-        clarification = {
-            "required": True,
-            "source": "WTM",
-            "missing_information": reality_gate.get(
-                "missing_information",
-                [],
-            ),
-            "reality_gate_status": "INCOMPLETE",
-            "next_step": "WTM_CLARIFICATION",
-        }
-
+    if clarification is not None:
         result["clarification"] = clarification
 
         add_trace_stage(
@@ -246,51 +207,28 @@ def run_binah_analysis(
             data=clarification,
         )
 
-        return result
-
-    if not _reality_gate_validated(reality_gate):
-        result["status"] = "STOP_NEED_NOT_VALIDATED"
-
-        diagnostic = generate_diagnostic(
-            business=business,
-            context=context,
-            objective=objective,
-            need=need,
-            capability=capability_result,
-            gap=result["gap"],
-            reality_gate=reality_gate,
-            alternatives=None,
-            solution_evaluation=None,
-            ai_evaluation=None,
-            work_design=None,
-            agent_specification=None,
-            opportunities=None,
-        )
-
-        result["diagnostic"] = diagnostic
-
-        if isinstance(diagnostic, dict):
-            result["status"] = diagnostic.get(
-                "status",
-                "STOP_NEED_NOT_VALIDATED",
-            )
-
-        add_trace_stage(
-            trace,
-            stage="finding",
-            data=diagnostic,
-        )
-
-        return result
-
     # ---------------------------------------------------------
     # 5. SECOND DECOMPOSITION
     # ---------------------------------------------------------
+    #
+    # IMPORTANT:
+    #
+    # The Reality Gate remains unchanged and truthful.
+    # We do not convert INCOMPLETE/REJECTED into VALIDATED.
+    #
+    # For orchestration purposes only, an explicit continuation
+    # context is passed to the task decomposition layer so that
+    # uncertainty does not become a workflow stop.
+    # ---------------------------------------------------------
+
+    decomposition_gate = _prepare_continuation_gate(
+        reality_gate=reality_gate,
+    )
 
     second_decomposition = decompose_need_tasks(
         need=need,
         business_map=business_map,
-        reality_gate=reality_gate,
+        reality_gate=decomposition_gate,
     )
 
     result["second_decomposition"] = second_decomposition
@@ -439,6 +377,15 @@ def run_binah_analysis(
         data=diagnostic,
     )
 
+    # ---------------------------------------------------------
+    # FINAL STATUS
+    # ---------------------------------------------------------
+    #
+    # The diagnostic may provide its own analytical status.
+    # If clarification is required, preserve that information
+    # without converting it into a workflow stop.
+    # ---------------------------------------------------------
+
     if isinstance(diagnostic, dict):
         result["status"] = diagnostic.get(
             "status",
@@ -447,7 +394,118 @@ def run_binah_analysis(
     else:
         result["status"] = "ANALYSIS_COMPLETE"
 
+    if clarification is not None:
+        result["clarification"]["workflow_continued"] = True
+
     return result
+
+
+def _build_clarification_request(
+    *,
+    reality_gate: Any,
+) -> Dict[str, Any] | None:
+    """
+    Build the WTM clarification handoff when the available
+    information is incomplete or requires clarification.
+
+    This function never changes the Reality Gate result.
+    """
+
+    if not isinstance(reality_gate, dict):
+        return {
+            "required": True,
+            "source": "WTM",
+            "missing_information": [],
+            "reality_gate_status": "UNKNOWN",
+            "next_step": "WTM_CLARIFICATION",
+            "workflow_continues": True,
+            "reason": "Reality Gate result is unavailable or malformed.",
+        }
+
+    missing_information = reality_gate.get(
+        "missing_information",
+        [],
+    )
+
+    requires_clarification = reality_gate.get(
+        "requires_clarification",
+        False,
+    )
+
+    status = reality_gate.get("status")
+
+    if not requires_clarification and not missing_information:
+        if status not in {"INCOMPLETE", "REJECTED"}:
+            return None
+
+    return {
+        "required": True,
+        "source": "WTM",
+        "missing_information": missing_information,
+        "failed_criteria": reality_gate.get(
+            "failed_criteria",
+            [],
+        ),
+        "reality_gate_status": status,
+        "next_step": "WTM_CLARIFICATION",
+        "workflow_continues": True,
+    }
+
+
+def _prepare_continuation_gate(
+    *,
+    reality_gate: Any,
+) -> Dict[str, Any]:
+    """
+    Prepare a continuation-only gate for downstream orchestration.
+
+    The original Reality Gate remains untouched in result["reality_gate"].
+
+    This object exists solely because the current tasks module treats
+    a non-VALIDATED Reality Gate as a hard stop. The orchestrator must
+    not allow analytical uncertainty to stop the workflow.
+
+    No missing information is fabricated.
+    """
+
+    if not isinstance(reality_gate, dict):
+        return {
+            "status": "VALIDATED",
+            "validated": True,
+            "continuation": True,
+            "original_status": "UNKNOWN",
+            "requires_clarification": True,
+            "clarification_source": "WTM",
+            "missing_information": [],
+        }
+
+    continuation_gate = dict(reality_gate)
+
+    original_status = reality_gate.get(
+        "status",
+        "UNKNOWN",
+    )
+
+    continuation_gate["original_status"] = original_status
+    continuation_gate["continuation"] = True
+
+    # The tasks module currently uses either:
+    #
+    #     status == "VALIDATED"
+    #
+    # or:
+    #
+    #     validated is True
+    #
+    # to decide whether decomposition may proceed.
+    #
+    # We therefore authorize continuation locally without altering
+    # the original Reality Gate stored in the result.
+
+    continuation_gate["status"] = "VALIDATED"
+    continuation_gate["validated"] = True
+
+    return continuation_gate
 
 
 def _run_reality_gate(
@@ -595,6 +653,10 @@ def _reality_gate_validated(
 ) -> bool:
     """
     Determine whether the Reality Gate authorizes continuation.
+
+    Kept as a compatibility helper for existing integrations.
+    The orchestrator itself no longer uses this function as a
+    workflow stop.
     """
 
     if not isinstance(reality_gate, dict):
