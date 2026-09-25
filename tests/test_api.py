@@ -207,16 +207,16 @@ def test_need_identification_contract():
         },
     )
 
-    # This test intentionally requires the correct API contract.
-    # Current main.py does not yet pass business_map to identify_need().
     assert response.status_code == 200
     data = response.json()
 
-    assert data["status"] == "NEED_IDENTIFIED"
+    assert data["status"] == "NEED_HYPOTHESIS"
     assert data["business"] == BUSINESS
     assert data["objective"] == OBJECTIVE
     assert "need" in data
     assert "validation" in data
+    assert data["validation"]["identified"] is True
+    assert data["validation"]["validated"] is False
 
 
 def test_capability_diagnosis():
@@ -243,8 +243,6 @@ def test_reality_gate_validated():
         json=REALITY_GATE_VALIDATED,
     )
 
-    # This test intentionally requires the correct API contract.
-    # Current main.py uses parameter names incompatible with reality.py.
     assert response.status_code == 200
     data = response.json()
 
@@ -253,7 +251,7 @@ def test_reality_gate_validated():
     assert all(data["criteria"].values())
 
 
-def test_reality_gate_stops_invalid_need():
+def test_reality_gate_rejects_invalid_need():
     response = client.post(
         "/v1/gates/reality",
         json={
@@ -269,8 +267,9 @@ def test_reality_gate_stops_invalid_need():
     assert response.status_code == 200
     data = response.json()
 
-    assert data["status"] == "STOP_NEED_NOT_VALIDATED"
+    assert data["status"] == "REJECTED"
     assert data["validated"] is False
+    assert data["failed_criteria"]
 
 
 def test_task_decomposition_requires_reality_gate():
@@ -537,3 +536,5 @@ def test_diagnostic_generation():
     assert "business" in data
     assert "need" in data
     assert "reality_gate" in data
+
+Este archivo sustituye completo al actual "tests/test_api.py". Después de subirlo, ejecuta CI. El resultado que buscamos es 29/29, y si aparece otro fallo no modificamos más tests a ciegas: revisamos exactamente qué contrato está fallando.
