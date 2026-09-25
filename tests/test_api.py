@@ -536,5 +536,3 @@ def test_diagnostic_generation():
     assert "business" in data
     assert "need" in data
     assert "reality_gate" in data
-
-Este archivo sustituye completo al actual "tests/test_api.py". Después de subirlo, ejecuta CI. El resultado que buscamos es 29/29, y si aparece otro fallo no modificamos más tests a ciegas: revisamos exactamente qué contrato está fallando.
